@@ -1,4 +1,4 @@
-const selfRoles = require('./selfRoles.json');
+const selfRoles = require('../selfRoles.json');
 
 module.exports = {
   name: 'messageReactionAdd',
