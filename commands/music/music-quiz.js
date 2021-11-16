@@ -10,38 +10,48 @@ const TriviaPlayer = require('../../utils/music/TriviaPlayer');
 
 module.exports = {
   data: new SlashCommandBuilder()
-    .setName('music-trivia')
-    .setDescription('Engage in a music quiz with your friends!')
+    .setName('music-quiz')
+    .setDescription('Starte ein Musik Quiz gegen deine Freunde!')
     .addStringOption(option =>
       option
-        .setName('length')
-        .setDescription('How many songs would you like the trivia to have?')
+        .setName('dauer')
+        .setDescription('Wie viele Songs sollen in dem Quiz sein?')
+    )
+    .addStringOption(option =>
+      option
+        .setName('kategorie')
+        .setDescription('Welche Kategorie soll abgespielt werden?')
+	    .addChoice('Anime', 'anime')
+		.addChoice('Trap', 'trap')
+	    .addChoice('Old', 'old')
     ),
   async execute(interaction) {
     await interaction.deferReply();
     const voiceChannel = interaction.member.voice.channel;
     if (!voiceChannel) {
       return interaction.followUp(
-        ':no_entry: Please join a voice channel and try again!'
+        ':no_entry: Bitte betrete zuerst einen Sprachkanal!'
       );
     }
 
     if (interaction.client.playerManager.get(interaction.guildId)) {
       return interaction.followUp(
-        `You can't use this while a track is playing!`
+        `Diese Funktion ist während eines Songs nicht möglich!`
       );
     }
 
     if (interaction.client.triviaManager.get(interaction.guildId)) {
-      return interaction.followUp('There is already a trivia in play!');
+      return interaction.followUp('Es findet bereits ein Quiz statt!');
     }
 
     const numberOfSongs = interaction.options.get('length')
       ? interaction.options.get('length').value
       : 5;
 
+    const category = interaction.options.get('kategorie') === "old" ? null : interaction.options.get('kategorie').value;
+
     const jsonSongs = fs.readFileSync(
-      '././resources/music/musictrivia.json',
+      '././resources/music/' + category + '.json',
       'utf8'
     );
     const videoDataArray = JSON.parse(jsonSongs).songs;
@@ -94,18 +104,19 @@ async function handleSubscription(interaction, player) {
     await entersState(player.connection, VoiceConnectionStatus.Ready, 10000);
   } catch (err) {
     console.error(err);
-    await interaction.followUp({ content: 'Failed to join your channel!' });
+    await interaction.followUp({ content: 'Konnte deinem Channel nicht beitreten!' });
     return;
   }
   player.process(player.queue);
 
   const startTriviaEmbed = new MessageEmbed()
     .setColor('#ff7373')
-    .setTitle(':notes: Starting Music Quiz!')
+    .setTitle(':notes: State Musik Quiz!')
     .setDescription(
-      `:notes: Get ready! There are ${queue.length} songs, you have 30 seconds to guess either the singer/band or the name of the song. Good luck!
-    Vote skip the song by entering the word 'skip'.
-    You can end the trivia at any point by using the end-trivia command!`
+      `:notes: Macht euch bereit! Es werden ${queue.length} Songs abgespielt und ihr habt 30 Sekunden
+      um den Sänger/Band/Anime oder den Songnamen zu eraten. Viel Glück!
+      Mit 'skip' könnt ihr einen Song überspringen.
+      Das Quiz kann mit /end-quiz beendet werden!`
     );
   return interaction.followUp({ embeds: [startTriviaEmbed] });
 }
@@ -115,7 +126,7 @@ function getRandom(arr, n) {
     len = arr.length,
     taken = new Array(len);
   if (n > len)
-    throw new RangeError('getRandom: more elements taken than available!');
+    throw new RangeError('getRandom: Die Anzahl ist zu groß!');
   while (n--) {
     var x = Math.floor(Math.random() * len);
     // prettier-ignore

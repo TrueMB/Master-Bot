@@ -1,28 +1,26 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
 const fetch = require('node-fetch');
+const { tenorAPI } = require('../../config.json');
 const { MessageEmbed } = require('discord.js');
 
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('awoo')
-    .setDescription('Bekomme ein Awoo.'),
-  execute(interaction, mentionedMember) {
-    fetch(`https://api.tenor.com/v1/random?key=${tenorAPI}&q=anime+awoo&limit=1`)
-          .then(res => res.json())
-          .then(json => {
+    .setDescription('Einfach Awoo.'),
+  async execute(interaction) {
+    await fetch(`https://api.tenor.com/v1/random?key=${tenorAPI}&q=anime+awoo&limit=1`)
+      .then(res => res.json())
+      .then(json => {
 
-    		 if (mentionedMember == 's') mentionedMember = '<@!' + message.author.id + '>';
+        const embed = new MessageEmbed()
+          .setDescription('Awoooo~~')
+    	  .setImage(json.results[0].media[0].gif.url);
 
-             const idkEmbed = new MessageEmbed()
-              .setDescription(mentionedMember + ' Awoos')
-    		  .setImage(json.results[0].media[0].gif.url);
-    		  //.setImage(json.results[0].url);
-             interaction.deferReply();
-             message.channel.send(idkEmbed);
-    	  })
-          .catch(err => {
-            console.error(err);
-            return interaction.reply(':x: Konnte kein Awoo laden.');
-          });
+        return interaction.reply({ embeds: [ embed ] });
+      })
+      .catch(err => {
+        console.error(err);
+        return interaction.reply(':x: Konnte kein Awoo laden.');
+      });
   }
 };

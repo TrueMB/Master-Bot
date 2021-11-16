@@ -5,17 +5,17 @@ const createGuildData = require('../../utils/createGuildData');
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('move')
-    .setDescription('Move a song to a desired position in queue!')
+    .setDescription('Verschiebe einen Song in der Warteschlange an eine andere Position!')
     .addIntegerOption(option =>
       option
         .setName('oldposition')
-        .setDescription('What is the position of the song you want to move?')
+        .setDescription('Welche Position möchtest du verschieben?')
         .setRequired(true)
     )
     .addIntegerOption(option =>
       option
         .setName('newposition')
-        .setDescription('What position do you want to move the song to?')
+        .setDescription('An welche Stelle möchtest du den Song verschieben?')
         .setRequired(true)
     ),
 
@@ -26,15 +26,15 @@ module.exports = {
     const guildData = interaction.client.guildData.get(interaction.guildId);
     const player = interaction.client.playerManager.get(interaction.guildId);
     if (!player) {
-      return interaction.reply('There is no song playing now!');
+      return interaction.reply('Es wird aktuell kein Song abgespielt!');
     } else if (player.audioPlayer.state.status !== AudioPlayerStatus.Playing) {
-      return interaction.reply('There is no song playing now!');
+      return interaction.reply('Es wird aktuell kein Song abgespielt!');
     } else if (
       player.audioPlayer.state.status === AudioPlayerStatus.Playing &&
       guildData.triviaData.isTriviaRunning
     ) {
       return interaction.reply(
-        `You can't use this command while a trivia is running!`
+          ':x: Bitte versuche es nach dem Musik Quiz erneut.'
       );
     } else if (
       interaction.member.voice.channelId !==
@@ -55,7 +55,7 @@ module.exports = {
       oldPosition == newPosition
     ) {
       return interaction.reply(
-        ':x: Try again and enter a valid song position number'
+        ':x: Bitte versuche es mit korrekten Positionen erneut.'
       );
     }
 

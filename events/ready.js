@@ -39,7 +39,7 @@ module.exports = {
     client.playerManager = new Map();
     client.triviaManager = new Map();
     client.guildData = new Collection();
-    client.user.setActivity('/', { type: 'WATCHING' });
+    client.user.setActivity('.tv/JacksonUndercover', { type: 'WATCHING' });
     mongoose
       .connect(encodeURI(mongo_URI), {
         useNewUrlParser: true,
@@ -57,6 +57,17 @@ module.exports = {
     } catch {
       console.log('no reminders found');
     }
+
+  //REACTIONS - NEEDS TO BE CACHED TO WORK
+  client.channels.fetch(ReactionChannel).then(reactionCh => {
+	 reactionCh.messages.fetch(ReactionMessage).then(reactionMSG => {
+        console.log('Cached Reaction Message!');
+	 }).catch(err => {
+        console.log(err)
+     });
+  }).catch(err => {
+    console.log(err)
+  });
 
   //TWITTER
   const T = new Twit({
@@ -95,19 +106,8 @@ module.exports = {
 
   check();
 
-  try {
-	//REACTIONS
-    let reactionCh = client.channels.fetch(ReactionChannel).then(reactionCh => {
-	    reactionCh.messages.fetch(ReactionMessage, true); //NEEDS TO BE CACHED TO WORK
-    }).catch(err => {
-        console.log(err)
-    })
+  console.log('Ready!');
 
-  } catch (error) {
-    console.error(error);
-  }
-
-    console.log('Ready!');
   }
 };
 

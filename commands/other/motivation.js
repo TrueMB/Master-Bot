@@ -5,7 +5,7 @@ const { MessageEmbed } = require('discord.js');
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('motivation')
-    .setDescription('Get a random motivational quote!'),
+    .setDescription('Bekomme einen Motivations Stups!'),
   execute(interaction) {
     // thanks to https://type.fit/api/quotes
 
@@ -20,13 +20,12 @@ module.exports = {
 
     const quoteEmbed = new MessageEmbed()
       .setAuthor(
-        'Motivational Quote',
+        'Motivation:',
         'https://i.imgur.com/Cnr6cQb.png',
         'https://type.fit'
       )
       .setDescription(`*"${randomQuote.text}*"\n\n-${randomQuote.author}`)
       .setTimestamp()
-      .setFooter('Powered by type.fit')
       .setColor('#FFD77A');
     return interaction.reply({ embeds: [quoteEmbed] });
   }

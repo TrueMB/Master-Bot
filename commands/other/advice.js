@@ -5,7 +5,7 @@ const { MessageEmbed } = require('discord.js');
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('advice')
-    .setDescription('Get some advice!'),
+    .setDescription('Bekomme einen Rat!'),
   execute(interaction) {
     fetch('https://api.adviceslip.com/advice')
       .then(res => res.json())
@@ -13,18 +13,17 @@ module.exports = {
         const embed = new MessageEmbed()
           .setColor('#403B3A')
           .setAuthor(
-            'Advice Slip',
+            'Mein Rat an dich:',
             'https://i.imgur.com/8pIvnmD.png',
             'https://adviceslip.com/'
           )
           .setDescription(json.slip.advice)
-          .setTimestamp()
-          .setFooter('Powered by adviceslip.com', '');
+          .setTimestamp();
         interaction.reply({ embeds: [embed] });
         return;
       })
       .catch(err => {
-        interaction.reply('Failed to deliver advice :sob:');
+        interaction.reply('Konnte leider keinen Rat für dich finden :sob:');
         return console.error(err);
       });
   }

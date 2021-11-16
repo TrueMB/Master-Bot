@@ -7,18 +7,18 @@ const { searchOne } = require('../../utils/music/searchOne');
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('save-to-playlist')
-    .setDescription('Save a song or a playlist to a custom playlist')
+    .setDescription('Speichere einen Song oder Playlist in deine eigene Playlist')
     .addStringOption(option =>
       option
         .setName('playlistname')
-        .setDescription('What is the playlist you would like to save to?')
+        .setDescription('In welche Playlist soll gespeichert werden?')
         .setRequired(true)
     )
     .addStringOption(option =>
       option
         .setName('url')
         .setDescription(
-          'What url would you like to save to playlist? It can also be a playlist url'
+          'Welchen Song oder Playlist möchtest du hinzufügen?'
         )
         .setRequired(true)
     ),
@@ -32,16 +32,16 @@ module.exports = {
       memberId: interaction.member.id
     }).exec();
     if (!userData) {
-      return interaction.followUp('You have no custom playlists!');
+      return interaction.followUp('Du besitzt keine Playlists!');
     }
     const savedPlaylistsClone = userData.savedPlaylists;
     if (savedPlaylistsClone.length == 0) {
-      return interaction.followUp('You have no custom playlists!');
+      return interaction.followUp('Du besitzt keine Playlists!');
     }
 
     if (!validateURL(url)) {
       return interaction.followUp(
-        'Please enter a valid YouTube or Spotify URL!'
+        'Bitte gib einen Korrekt YouTube oder Spotify Link ein!'
       );
     }
 
@@ -62,17 +62,14 @@ module.exports = {
           urlsArrayClone = urlsArrayClone.concat(processedURL);
           savedPlaylistsClone[location].urls = urlsArrayClone;
           interaction.followUp(
-            'The playlist you provided was successfully saved!'
+            'Deine genannte Playlist wurde gespeichert!'
           );
         } else {
           urlsArrayClone.push(processedURL);
           savedPlaylistsClone[location].urls = urlsArrayClone;
           interaction.followUp(
-            `I added **${
-              savedPlaylistsClone[location].urls[
-                savedPlaylistsClone[location].urls.length - 1
-              ].title
-            }** to **${playlistName}**`
+            `**${savedPlaylistsClone[location].urls[savedPlaylistsClone[location].urls.length - 1].title}**
+            wurde zu **${playlistName}** gespeichert`
           );
         }
         Member.updateOne(
@@ -81,7 +78,7 @@ module.exports = {
         ).exec();
       });
     } else {
-      return interaction.followUp(`You have no playlist named ${playlistName}`);
+      return interaction.followUp(`Du besitzt keine Playlist mit dem Namen: ${playlistName}`);
     }
   }
 };
@@ -135,7 +132,7 @@ async function processURL(url, interaction) {
       url.match(/^https?:\/\/(www.youtube.com|youtube.com)\/playlist(.*)$/)
     ) {
       const playlist = await YouTube.getPlaylist(url).catch(function() {
-        reject(':x: Playlist is either private or it does not exist!');
+        reject(':x: Playlist ist Privat oder existiert nicht!');
       });
       let videosArr = await playlist.fetch();
       videosArr = videosArr.videos;
@@ -151,10 +148,10 @@ async function processURL(url, interaction) {
       resolve(urlsArr);
     } else {
       const video = await YouTube.getVideo(url).catch(function() {
-        reject(':x: There was a problem getting the video you provided!');
+        reject(':x: Es gab ein Problem mit deinem genannten Link!');
       });
       if (video.live) {
-        reject("I don't support live streams!");
+        reject("Live Streams sind leider nicht möglich!");
       }
       resolve(constructSongObj(video, interaction.member.user));
     }

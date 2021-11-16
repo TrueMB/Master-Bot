@@ -8,7 +8,7 @@ module.exports = {
     .addUserOption(option =>
       option
         .setName('user')
-        .setDescription('The user which avatar you want to display')
+        .setDescription('Welchen Benutzer Avatar möchtest du angezeigt bekommen?')
         .setRequired(true)
     ),
 

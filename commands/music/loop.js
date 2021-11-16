@@ -4,7 +4,7 @@ const createGuildData = require('../../utils/createGuildData');
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('loop')
-    .setDescription('Set a song to play on loop'),
+    .setDescription('Wiederhole einen Song!'),
 
   execute(interaction) {
     if (!interaction.client.guildData.get(interaction.guildId)) {
@@ -13,35 +13,35 @@ module.exports = {
     const guildData = interaction.client.guildData.get(interaction.guildId);
     const player = interaction.client.playerManager.get(interaction.guildId);
     if (!player) {
-      return interaction.reply('There is no song playing now!');
+      return interaction.reply('Es wird aktuell kein Song abgespielt!');
     } else if (player.audioPlayer.state.status !== AudioPlayerStatus.Playing) {
-      return interaction.reply('There is no song playing now!');
+      return interaction.reply('Es wird aktuell kein Song abgespielt!');
     } else if (
       player.audioPlayer.state.status === AudioPlayerStatus.Playing &&
       guildData.triviaData.isTriviaRunning
     ) {
       return interaction.reply(
-        `You can't use this command while a trivia is running!`
+        `Du kannst diesen Command nicht während eines Musik Quizes ausführen!`
       );
     } else if (
       interaction.member.voice.channelId !==
       interaction.guild.me.voice.channelId
     ) {
       return interaction.reply(
-        `You must be in the same voice channel as the bot in order to use that!`
+        'Du musst im gleichen Sprachkanal sein, um diesen Command ausführen zu können!'
       );
     }
 
     if (player.loopSong) {
       player.loopSong = false;
       return interaction.reply(
-        `**${player.nowPlaying.title}** is no longer playing on repeat :repeat: `
+        `**${player.nowPlaying.title}** wird nun nicht mehr wiederholt :repeat: `
       );
     }
 
     player.loopSong = true;
     interaction.reply(
-      `**${player.nowPlaying.title}** is now playing on repeat :repeat: `
+      `**${player.nowPlaying.title}** wird nun wiederholt :repeat: `
     );
   }
 };

@@ -11,6 +11,9 @@ module.exports = {
     const owner = await interaction.guild.fetchOwner();
     const isOwner = owner.id == interaction.member.id ? true : false;
 
+    if(!isOwner)
+		 return interaction.reply(':x: Der Command ist nur für den Server Besitzer!');
+
     const pingMsg = await interaction.channel.send('Processing...');
 
     const commandTotal = interaction.client.commands.size;

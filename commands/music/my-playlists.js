@@ -5,7 +5,7 @@ const { MessageEmbed } = require('discord.js');
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('my-playlists')
-    .setDescription('Lists your saved playlists'),
+    .setDescription('Listet deine Playlists auf'),
 
   async execute(interaction) {
     interaction.deferReply();
@@ -14,12 +14,12 @@ module.exports = {
       memberId: interaction.member.id
     }).exec();
     if (!userData) {
-      interaction.followUp('You have zero saved playlists!');
+      interaction.followUp('Du besitzt keine Playlists!');
       return;
     }
     const savedPlaylistsClone = userData.savedPlaylists;
     if (savedPlaylistsClone.length == 0) {
-      interaction.followUp('You have zero saved playlists!');
+      interaction.followUp('Du besitzt keine Playlists!');
       return;
     }
     const fields = [];
@@ -28,7 +28,7 @@ module.exports = {
     );
 
     const playlistsEmbed = new MessageEmbed()
-      .setTitle('Your saved playlists')
+      .setTitle('Deine Playlists:')
       .setFields(fields)
       .setTimestamp();
 

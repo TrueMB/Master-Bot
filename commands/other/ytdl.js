@@ -1,6 +1,8 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
 const { MessageEmbed } = require('discord.js');
 const fetch = require('node-fetch');
+const ytdl = require('ytdl-core');
+const ffmpeg = require('fluent-ffmpeg');
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -16,10 +18,19 @@ module.exports = {
       option
         .setName('format')
         .setDescription('In welchem Format soll heruntergeladen werden?')
+		.addChoice('MP3', 'mp3')
+	    .addChoice('MP4', 'mp4')
     ),
-  execute(interaction, link, format) {
+  async execute(interaction) {
+      let owner = await interaction.guild.fetchOwner();
+      if(interaction.member != owner)
+		 return interaction.reply(':x: Der Command ist nur für den Server Besitzer!');
 
+      const link = interaction.options.get('link').value;
+      const format = interaction.options.get('format') === null ? null : interaction.options.get('format').value;
 	  var path = '/home/Master-Bot/downloads/'
+
+      interaction.deferReply();
 
 	  if(format == null || format.toLowerCase() === 'mp3'){
 
@@ -40,10 +51,10 @@ module.exports = {
 			.saveToFile(path + 'Music/' + title + '.mp3')
 			.on("error", function(err) {
 			  console.log('error', err)
-			  return interaction.reply(':x: Es ist ein Fehler aufgetreten!');
+			  return interaction.editReply(':x: Es ist ein Fehler aufgetreten!');
 			})
 			.on("end", function() {
-			  return interaction.reply('Dein Song wurde heruntergeladen! (' + info.videoDetails.title + ')');
+			  return interaction.editReply('Dein Song wurde heruntergeladen! (' + info.videoDetails.title + ')');
 			});
 		 });
 	  }else if(format.toLowerCase() === 'mp4'){
@@ -66,10 +77,10 @@ module.exports = {
 			.saveToFile(path + 'Video/' + title + '.mp4')
 			.on("error", function(err) {
 			  console.log('error', err)
-			  return interaction.reply(':x: Es ist ein Fehler aufgetreten!');
+			  return interaction.editReply(':x: Es ist ein Fehler aufgetreten!');
 			})
 			.on("end", function() {
-			  return interaction.reply('Dein Video wurde heruntergeladen! (' + info.videoDetails.title + ')');
+			  return interaction.editReply('Dein Video wurde heruntergeladen! (' + info.videoDetails.title + ')');
 			});
 		 });
 	  }
