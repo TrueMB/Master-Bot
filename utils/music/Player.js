@@ -9,7 +9,7 @@ const {
 } = require('@discordjs/voice');
 const { setTimeout } = require('timers');
 const { promisify } = require('util');
-const ytdl = require('ytdl-core');
+const ytdl = require('discord-ytdl-core');
 const { MessageEmbed } = require('discord.js');
 const wait = promisify(setTimeout);
 
@@ -110,9 +110,9 @@ class MusicPlayer {
           .setThumbnail(this.nowPlaying.thumbnail)
           .setTitle(this.nowPlaying.title)
           .setColor('#ff0000')
-          .addField('Duration', ':stopwatch: ' + this.nowPlaying.duration, true)
+          .addField('Dauer', ':stopwatch: ' + this.nowPlaying.duration, true)
           .setFooter(
-            `Requested by ${this.nowPlaying.memberDisplayName}!`,
+            `Gewünscht von ${this.nowPlaying.memberDisplayName}!`,
             this.nowPlaying.memberAvatar
           );
         if (queueHistory.length) {
@@ -154,6 +154,8 @@ class MusicPlayer {
       const stream = ytdl(song.url, {
         filter: 'audio',
         quality: 'highestaudio',
+        fmt: 'mp3',
+		seek: song.timestamp,
         highWaterMark: 1 << 25
       });
       const resource = createAudioResource(stream, {

@@ -14,7 +14,7 @@ module.exports = {
     .setDescription('Starte ein Musik Quiz gegen deine Freunde!')
     .addStringOption(option =>
       option
-        .setName('dauer')
+        .setName('songs')
         .setDescription('Wie viele Songs sollen in dem Quiz sein?')
     )
     .addStringOption(option =>
@@ -24,6 +24,11 @@ module.exports = {
 	    .addChoice('Anime', 'anime')
 		.addChoice('Trap', 'trap')
 	    .addChoice('Old', 'old')
+    )
+    .addIntegerOption(option =>
+      option
+        .setName('dauer')
+        .setDescription('Wie lange soll ein Song gehen?')
     ),
   async execute(interaction) {
     await interaction.deferReply();
@@ -44,11 +49,15 @@ module.exports = {
       return interaction.followUp('Es findet bereits ein Quiz statt!');
     }
 
-    const numberOfSongs = interaction.options.get('length')
-      ? interaction.options.get('length').value
+    const numberOfSongs = interaction.options.get('songs')
+      ? interaction.options.get('songs').value
       : 5;
 
-    const category = interaction.options.get('kategorie') === "old" ? null : interaction.options.get('kategorie').value;
+    const lengthOfSongs = interaction.options.get('dauer')
+      ? interaction.options.get('dauer').value
+      : 30;
+
+    const category = interaction.options.get('kategorie') === null ? "old" : interaction.options.get('kategorie').value;
 
     const jsonSongs = fs.readFileSync(
       '././resources/music/' + category + '.json',
@@ -72,6 +81,7 @@ module.exports = {
         url: link.url,
         singer: link.singer,
         title: link.title,
+        length: lengthOfSongs,
         voiceChannel
       });
     });
@@ -113,7 +123,7 @@ async function handleSubscription(interaction, player) {
     .setColor('#ff7373')
     .setTitle(':notes: State Musik Quiz!')
     .setDescription(
-      `:notes: Macht euch bereit! Es werden ${queue.length} Songs abgespielt und ihr habt 30 Sekunden
+      `:notes: Macht euch bereit! Es werden ${queue.length} Songs abgespielt und ihr habt ${queue[0].length} Sekunden
       um den Sänger/Band/Anime oder den Songnamen zu eraten. Viel Glück!
       Mit 'skip' könnt ihr einen Song überspringen.
       Das Quiz kann mit /end-quiz beendet werden!`

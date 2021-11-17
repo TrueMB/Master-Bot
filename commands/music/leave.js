@@ -22,6 +22,6 @@ module.exports = {
 
     player.connection.destroy();
     interaction.client.playerManager.delete(interaction.guildId);
-    return interaction.reply('Bye bye :(!');
+    return interaction.reply('Bye bye! :(');
   }
 };
