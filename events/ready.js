@@ -38,6 +38,11 @@ module.exports = {
   async execute(client) {
     client.playerManager = new Map();
     client.triviaManager = new Map();
+    client.twitchData = {
+      Interval: null,
+      embedStatus: null,
+      isRunning: false
+    };
     client.guildData = new Collection();
     client.user.setActivity('.tv/JacksonUndercover', { type: 'WATCHING' });
     mongoose

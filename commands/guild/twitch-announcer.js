@@ -1,7 +1,7 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
 const { MessageEmbed, MessageAttachment } = require('discord.js');
 const TwitchAPI = require('../../resources/twitch/twitch-api.js');
-const mongoose = require('mongoose');
+const Twitch = require('../../utils/models/Twitch');
 const probe = require('probe-image-size');
 const Canvas = require('canvas');
 const {
@@ -12,118 +12,136 @@ const {
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('twitch-announcer')
-    .setDescription('Kündigt Streams an'),
-  execute(interaction) {
+    .setDescription('Kündigt Streams an')
+    .addStringOption(option =>
+      option
+        .setName('status')
+        .setDescription('Was möchstest du mit dem Twitch Ankündiger machen?')
+	    .addChoice('Enable', 'enable')
+		.addChoice('Disable', 'disable')
+	    .addChoice('Check', 'check')
+        .setRequired(true)
+	)
+    .addStringOption(option =>
+      option
+        .setName('twitchuser')
+        .setDescription('Welchen Twitch User möchtest du ankündigen?')
+        .setRequired(true)
+    ),
+  async execute(interaction) {
 
     let owner = await interaction.guild.fetchOwner();
     if(interaction.member != owner)
 	  return interaction.reply(':x: Der Command ist nur für den Server Besitzer!');
 
-    // Grab DataBase 1 get
-    const guildData = await Guild.findOne({
-       guildId: interaction.guild.id, //TODO https://github.com/galnir/Master-Bot/blob/main/commands/guild/set-welcome-message.js
-       guildId: interaction.guild.id
-    }).exec();
-    var Twitch_DB = new db.table('Twitch_DB');
-    const DBInfo = Twitch_DB.get(`${message.guild.id}.twitchAnnouncer`);
+    const twitchUser = interaction.options.get('twitchuser').value;
+    const status = interaction.options.get('status').value;
 
-    var textFiltered = textRaw.toLowerCase();
+    // Grab the Entry from the Database
+    const twitchData = await Twitch.findOne({
+       guildId: interaction.guild.id,
+       name: twitchUser
+    }).exec();
+
     var embedID;
     let currentGame;
 
     // Error Missing DB
-    if (DBInfo == undefined) {
-      message.reply(
+    if (twitchData == undefined) {
+      interaction.reply(
         ':no_entry: Es wurden keine Einstellungen gefunden. Bitte mach zuerst **/twitch-announcer-settings**`'
       );
       return;
     }
-
+    interaction.deferReply();
     try {
       var user = await TwitchAPI.getUserInfo(
         TwitchAPI.access_token,
         twitchClientID,
-        `${DBInfo.name}`
+        `${twitchData.name}`
       );
     } catch (e) {
-      message.reply(':x: ' + e);
+      interaction.followUp(':x: ' + e);
       return;
     }
-
+console.log(twitchData)
     // Enable Embed
     const enabledEmbed = new MessageEmbed()
       .setAuthor(
-        message.member.guild.name + ' Announcer Settings',
+        interaction.member.guild.name + ' Ankündigungs-Einstellungen',
         `https://static.twitchcdn.net/assets/favicon-32-d6025c14e900565d6177.png`,
         'https://twitch.tv/' + user.data[0].display_name
       )
-      .setTitle(`:white_check_mark: Twitch Announcer Enabled!`)
+      .setTitle(`:white_check_mark: Twitch Ankündigungen aktiviert!`)
       .setColor('#6441A4')
       .setThumbnail(user.data[0].profile_image_url)
-      .addField('Pre-Notification Message', `${DBInfo.botSay}`)
-      .addField(`Streamer`, `${DBInfo.name}`, true)
-      .addField(`Channel`, `${DBInfo.channel}`, true)
-      .addField(`Checking Interval`, `***${DBInfo.timer}*** minute(s)`, true)
-      .addField('View Counter:', user.data[0].view_count, true);
+      .addField('Benachrichtigung', `${twitchData.message}`)
+      .addField(`Streamer`, `${twitchData.name}`, true)
+      .addField(`Channel`, `${twitchData.channel}`, true)
+      .addField(`Check Interval`, `***${twitchData.timer}*** Minute(n)`, true)
+      .addField('Zuschauer Anzahl:', user.data[0].view_count + '', true);
     if (user.data[0].broadcaster_type == '')
-      enabledEmbed.addField('Rank:', 'BASE!', true);
+      enabledEmbed.addField('Rang:', 'BASE!', true);
     else {
       enabledEmbed
         .addField(
-          'Rank:',
+          'Rang:',
           user.data[0].broadcaster_type.toUpperCase() + '!',
           true
         )
-        .setFooter(DBInfo.savedName, DBInfo.savedAvatar)
-        .setTimestamp(DBInfo.date);
+        .setFooter(
+           twitchData.savedName,
+           twitchData.avatarLink
+        )
+        .setTimestamp(twitchData.date);
     }
 
     // Disable Embed
     const disabledEmbed = new MessageEmbed()
       .setAuthor(
-        message.member.guild.name + ' Announcer Settings',
+        interaction.member.guild.name + ' Ankündigungs-Einstellungen',
         `https://static.twitchcdn.net/assets/favicon-32-d6025c14e900565d6177.png`,
         'https://twitch.tv/' + user.data[0].display_name
       )
       .setTitle(`:x: Twitch Announcer Disabled!`)
       .setColor('#6441A4')
       .setThumbnail(user.data[0].profile_image_url)
-      .addField('Pre-Notification Message', `${DBInfo.botSay}`)
-      .addField(`Streamer`, `${DBInfo.name}`, true)
-      .addField(`Channel`, `${DBInfo.channel}`, true)
-      .addField(`Checking Interval`, `***${DBInfo.timer}*** minute(s)`, true)
-      .addField('View Counter:', user.data[0].view_count, true);
+      .addField('Benachrichtigung', `${twitchData.message}`)
+      .addField(`Streamer`, `${twitchData.name}`, true)
+      .addField(`Channel`, `${twitchData.channel}`, true)
+      .addField(`Check Interval`, `***${twitchData.timer}*** Minute(n)`, true)
+      .addField('Zuschauer Anzahl:', user.data[0].view_count + '', true);
     if (user.data[0].broadcaster_type == '')
-      disabledEmbed.addField('Rank:', 'BASE!', true);
+      disabledEmbed.addField('Rang:', 'BASE!', true);
     else {
       disabledEmbed
         .addField(
-          'Rank:',
+          'Rang:',
           user.data[0].broadcaster_type.toUpperCase() + '!',
           true
         )
-        .setFooter(DBInfo.savedName, DBInfo.savedAvatar)
-        .setTimestamp(DBInfo.date);
+        .setFooter(twitchData.savedName, twitchData.savedAvatar)
+        .setTimestamp(twitchData.date);
     }
 
     // Check Twitch Announcer Status
-    if (textFiltered == 'check') {
-      if (message.guild.twitchData.isRunning) {
-        message.channel.send(enabledEmbed);
+    if (status == 'check') {
+      if (interaction.guild.twitchData.isRunning) {
+        interaction.followUp({ embeds: [enabledEmbed] });
       } else {
-        message.channel.send(disabledEmbed);
+        interaction.followUp({ embeds: [disabledEmbed] });
       }
       return;
     }
 
     // Enable Twitch Announcer
-    if (textFiltered == 'enable') {
-      if (message.guild.twitchData.isRunning == false) {
+    if (status == 'enable') {
+      if (interaction.client.twitchData.isRunning == false) {
         var failedAttempts = 0;
-        message.guild.twitchData.isRunning = true;
-        message.guild.twitchData.Interval = setInterval(async function() {
-          const announcedChannel = message.guild.channels.cache.find(
-            channel => channel.id == DBInfo.channelID
+        interaction.client.twitchData.isRunning = true;
+        interaction.client.twitchData.Interval = setInterval(async function() {
+          const announcedChannel = interaction.guild.channels.cache.find(
+            channel => channel.id == twitchData.channelId
           );
 
           try {
@@ -135,11 +153,11 @@ module.exports = {
           } catch (e) {
             ++failedAttempts;
             if (failedAttempts == 5) {
-              message.guild.twitchData.isRunning = false;
-              message.guild.twitchData.Interval = clearInterval(
-                message.guild.twitchData.Interval
+              interaction.client.twitchData.isRunning = false;
+              interaction.client.twitchData.Interval = clearInterval(
+                interaction.client.twitchData.Interval
               );
-              message.reply(':x: Twitch Announcer has stopped!\n' + e);
+              interaction.followUp(':x: Twitch Ankündiger wurde aufgrund eines Fehlers gestoppt.\n' + e);
             }
             return;
           }
@@ -147,36 +165,36 @@ module.exports = {
           // Set Status to Offline
           if (
             !streamInfo.data[0] &&
-            message.guild.twitchData.embedStatus == 'sent'
+            interaction.client.twitchData.embedStatus == 'sent'
           ) {
-            message.guild.twitchData.embedStatus = 'offline';
+            interaction.client.twitchData.embedStatus = 'offline';
           }
           // Set Status To Online
           if (
-            message.guild.twitchData.embedStatus != 'sent' &&
+            interaction.client.twitchData.embedStatus != 'sent' &&
             streamInfo.data[0]
           ) {
-            message.guild.twitchData.embedStatus = 'online';
+            interaction.client.twitchData.embedStatus = 'online';
           }
 
           // Online Status
-          if (message.guild.twitchData.embedStatus == 'online') {
+          if (interaction.client.twitchData.embedStatus == 'online') {
             currentGame = streamInfo.data[0].game_name;
 
             try {
               user = await TwitchAPI.getUserInfo(
                 TwitchAPI.access_token,
                 twitchClientID,
-                `${DBInfo.name}`
+                `${twitchData.name}`
               );
             } catch (e) {
               ++failedAttempts;
               if (failedAttempts == 5) {
-                message.guild.twitchData.isRunning = false;
-                message.guild.twitchData.Interval = clearInterval(
-                  message.guild.twitchData.Interval
+                interaction.client.twitchData.isRunning = false;
+                interaction.client.twitchData.Interval = clearInterval(
+                  interaction.client.twitchData.Interval
                 );
-                message.reply(':x: Twitch Announcer has stopped!\n' + e);
+                interaction.followUp(':x: Twitch Ankündiger wurde aufgrund eines Fehlers gestoppt.\n' + e);
               }
               return;
             }
@@ -207,11 +225,11 @@ module.exports = {
             } catch (e) {
               ++failedAttempts;
               if (failedAttempts == 5) {
-                message.guild.twitchData.isRunning = false;
-                message.guild.twitchData.Interval = clearInterval(
-                  message.guild.twitchData.Interval
+                interaction.client.twitchData.isRunning = false;
+                interaction.client.twitchData.Interval = clearInterval(
+                  interaction.client.twitchData.Interval
                 );
-                message.reply(':x: Twitch Announcer has stopped!\n' + e);
+                interaction.followUp(':x: Twitch Ankündiger wurde aufgrund eines Fehlers gestoppt.\n' + e);
               }
               return;
             }
@@ -219,24 +237,20 @@ module.exports = {
             // Online Embed
             const onlineEmbed = new MessageEmbed()
               .setAuthor(
-                `Twitch Announcement: ${user.data[0].display_name} Online!`,
+                `Twitch Ankündigung: ${user.data[0].display_name} ist Online!`,
                 user.data[0].profile_image_url,
                 'https://twitch.tv/' + user.data[0].display_name
               )
               .setURL('https://twitch.tv/' + user.data[0].display_name)
               .setTitle(
-                user.data[0].display_name + ' is playing ' + currentGame
+                user.data[0].display_name + ' spielt ' + currentGame
               )
-              .addField('Stream Title:', streamInfo.data[0].title)
-              .addField(
-                'Currently Playing:',
-                streamInfo.data[0].game_name,
-                true
-              )
-              .addField('Viewers:', streamInfo.data[0].viewer_count, true)
+              .addField('Stream Titel:', streamInfo.data[0].title)
+              .addField('Spiel:', streamInfo.data[0].game_name, true)
+              .addField('Zuschauer:', streamInfo.data[0].viewer_count, true)
               .setColor('#6441A4')
               .setFooter(
-                'Stream Started',
+                'Stream gestartet',
                 'https://static.twitchcdn.net/assets/favicon-32-d6025c14e900565d6177.png' // Official icon link from Twitch.tv
               )
               .setImage(
@@ -249,10 +263,10 @@ module.exports = {
               .setThumbnail('attachment://box_art.png');
 
             if (user.data[0].broadcaster_type == '')
-              onlineEmbed.addField('Rank:', 'BASE!', true);
+              onlineEmbed.addField('Rang:', 'BASE!', true);
             else {
               onlineEmbed.addField(
-                'Rank:',
+                'Rang:',
                 user.data[0].broadcaster_type.toUpperCase() + '!',
                 true
               );
@@ -260,8 +274,8 @@ module.exports = {
 
             // Online Send
             try {
-              if (DBInfo.botSay.toLowerCase() != 'none') {
-                await announcedChannel.send(DBInfo.botSay),
+              if (twitchData.message.toLowerCase() != 'none') {
+                await announcedChannel.send(twitchData.message),
                   await announcedChannel.send(onlineEmbed).then(result => {
                     embedID = result.id;
                   });
@@ -273,52 +287,52 @@ module.exports = {
             } catch (error) {
               ++failedAttempts;
               if (failedAttempts == 5) {
-                message.reply(':x: Could not send message to channel');
+                message.reply(':x: Konnte keine Nachricht geschickt werden.');
                 console.log(error);
-                message.guild.twitchData.isRunning = false;
-                message.guild.twitchData.Interval = clearInterval(
-                  message.guild.twitchData.Interval
+                interaction.client.twitchData.isRunning = false;
+                interaction.client.twitchData.Interval = clearInterval(
+                  interaction.client.twitchData.Interval
                 );
               }
               return;
             }
             // Change Embed Status
-            message.guild.twitchData.embedStatus = 'sent';
+            interaction.client.twitchData.embedStatus = 'sent';
           }
 
           // Offline Status
-          if (message.guild.twitchData.embedStatus == 'offline') {
+          if (interaction.client.twitchData.embedStatus == 'offline') {
             try {
               user = await TwitchAPI.getUserInfo(
                 TwitchAPI.access_token,
                 twitchClientID,
-                `${DBInfo.name}`
+                `${twitchData.name}`
               );
             } catch (e) {
               ++failedAttempts;
               if (failedAttempts == 5) {
-                message.guild.twitchData.isRunning = false;
-                message.guild.twitchData.Interval = clearInterval(
-                  message.guild.twitchData.Interval
+                interaction.client.twitchData.isRunning = false;
+                interaction.client.twitchData.Interval = clearInterval(
+                  interaction.client.twitchData.Interval
                 );
-                message.reply(':x: Twitch Announcer has stopped!\n' + e);
+                interaction.followUp(':x: Twitch Ankündiger wurde aufgrund eines Fehlers gestoppt.\n' + e);
               }
               return;
             }
 
             const offlineEmbed = new MessageEmbed()
               .setAuthor(
-                `Twitch Announcement: ${user.data[0].display_name} Offline`,
+                `Twitch Ankündigung: ${user.data[0].display_name} ist Offline`,
                 user.data[0].profile_image_url,
                 'https://twitch.tv/' + user.data[0].display_name
               )
               .setTitle(
-                user.data[0].display_name + ' was playing ' + currentGame
+                user.data[0].display_name + ' hat ' + currentGame + ' gespielt'
               )
               .setColor('#6441A4')
               .setTimestamp()
               .setFooter(
-                'Stream Ended',
+                'Stream beendet',
                 'https://static.twitchcdn.net/assets/favicon-32-d6025c14e900565d6177.png'
               )
               .setThumbnail('attachment://box_art.png');
@@ -326,20 +340,20 @@ module.exports = {
             // Incase the there is no Profile Description
             if (!user.data[0].description == '') {
               offlineEmbed.addField(
-                'Profile Description:',
+                'Profil Beschreibung:',
                 user.data[0].description
               );
             }
             offlineEmbed.addField(
-              'View Counter:',
-              user.data[0].view_count,
+              'Zuschauer Anzahl:',
+              user.data[0].view_count + '',
               true
             );
             if (user.data[0].broadcaster_type == '')
-              offlineEmbed.addField('Rank:', 'BASE!', true);
+              offlineEmbed.addField('Rang:', 'BASE!', true);
             else {
               offlineEmbed.addField(
-                'Rank:',
+                'Rang:',
                 user.data[0].broadcaster_type.toUpperCase() + '!',
                 true
               );
@@ -359,31 +373,31 @@ module.exports = {
             } catch (error) {
               ++failedAttempts;
               if (failedAttempts == 5) {
-                message.reply(':x: Could not edit message');
+                interaction.followUp(':x: Konnte Nachricht nicht bearbeiten');
                 console.log(error);
-                message.guild.twitchData.isRunning = false;
-                message.guild.twitchData.Interval = clearInterval(
-                  message.guild.twitchData.Interval
+                interaction.client.twitchData.isRunning = false;
+                interaction.client.twitchData.Interval = clearInterval(
+                  interaction.client.twitchData.Interval
                 );
               }
               return;
             }
             // Change Embed Status
-            message.guild.twitchData.embedStatus = 'end';
+            interaction.client.twitchData.embedStatus = 'end';
           }
           // Reset Fail Counter
           failedAttempts = 0;
-        }, DBInfo.timer * 60000); //setInterval() is in MS and needs to be converted to minutes
+        }, twitchData.timer * 60000); //setInterval() is in MS and needs to be converted to minutes
       }
-      message.channel.send(enabledEmbed);
+      interaction.followUp({ embeds: [enabledEmbed] });
       return;
     }
 
     // Disable Twitch Announcer
-    if (textFiltered == 'disable') {
-      message.guild.twitchData.isRunning = false;
-      message.guild.twitchData.Interval = clearInterval(
-        message.guild.twitchData.Interval
+    if (status == 'disable') {
+      interaction.client.twitchData.isRunning = false;
+      interaction.client.twitchData.Interval = clearInterval(
+        interaction.client.twitchData.Interval
       );
       message.channel.send(disabledEmbed);
       return;

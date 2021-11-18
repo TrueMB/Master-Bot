@@ -1,6 +1,10 @@
 const { Schema, model } = require('mongoose');
 
-const ReminderSchema = Schema({
+const TwitchSchema = Schema({
+  guildId: {
+     type: String,
+     required: true
+  },
   name: {
     type: String,
     required: true
@@ -23,4 +27,4 @@ const ReminderSchema = Schema({
   }
 });
 
-module.exports = model('Twitch', ReminderSchema);
+module.exports = model('Twitch', TwitchSchema);
