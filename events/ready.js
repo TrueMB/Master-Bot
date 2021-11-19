@@ -98,11 +98,13 @@ module.exports = {
         console.log('Couldnt find the Twitter Channel')
     })
   })
+
+  /*
   stream.on('error', function(err) {
 	  //console.log('Twitter Error')
       console.log(err)
   });
-
+  */
   //YOUTUBE INIT
   feeder.on('error', function(err) {
 	  console.log('Youtube Error')

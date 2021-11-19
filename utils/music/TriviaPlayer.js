@@ -252,7 +252,7 @@ class TriviaPlayer {
               return b[1] - a[1];
             })
           );
-
+console.log(this.queue[0])
           const song = `${capitalize_Words(
             this.queue[0].singer
           )}: ${capitalize_Words(this.queue[0].title)}`;
