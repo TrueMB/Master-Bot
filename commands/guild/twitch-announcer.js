@@ -64,7 +64,7 @@ module.exports = {
       interaction.followUp(':x: ' + e);
       return;
     }
-console.log(twitchData)
+
     // Enable Embed
     const enabledEmbed = new MessageEmbed()
       .setAuthor(
@@ -126,7 +126,7 @@ console.log(twitchData)
 
     // Check Twitch Announcer Status
     if (status == 'check') {
-      if (interaction.guild.twitchData.isRunning) {
+      if (interaction.client.twitchData.isRunning) {
         interaction.followUp({ embeds: [enabledEmbed] });
       } else {
         interaction.followUp({ embeds: [disabledEmbed] });
@@ -399,7 +399,7 @@ console.log(twitchData)
       interaction.client.twitchData.Interval = clearInterval(
         interaction.client.twitchData.Interval
       );
-      message.channel.send(disabledEmbed);
+      interaction.followUp({ embeds: [disabledEmbed] });
       return;
     }
   }

@@ -59,17 +59,19 @@ module.exports = {
 
   interaction.client.channels.fetch(channelId)
     .then(channel => {
-      const avatarLink = `https://cdn.discordapp.com/avatars/${interaction.member.user.id}/${interaction.member.user.avatar}.png;`
-      const twitchObject = {
+      const avatarLink = `https://cdn.discordapp.com/avatars/${interaction.member.user.id}/${interaction.member.user.avatar}.png`
+      const twitchFilter = {
           guildId: interaction.guild.id,
-          name: user.data[0].display_name,
+          name: user.data[0].display_name
+      };
+      const twitchObject = {
           channelId: channel.id,
           channel: channel.name,
           message: botMessage,
-          time: timer,
+          timer: timer,
           savedName: interaction.member.user.username,
-          savedAvatar: avatarLink,
-        };
+          savedAvatar: avatarLink
+      };
 
         const embed = new MessageEmbed()
           .setAuthor(
@@ -106,7 +108,10 @@ module.exports = {
         }
 
         //SAVE IN DB
-        Twitch.create(twitchObject); //TODO Was passiert, wenn man bearbeitet?
+        Twitch.findOneAndUpdate(twitchFilter, twitchObject, { new: true, upsert: true }, (error, data) => {
+           if(error)
+              console.log(error);
+        });
 
         //Send Response
         return interaction.reply({ embeds: [ embed ] });
