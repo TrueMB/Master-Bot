@@ -1,4 +1,5 @@
 const { Collection } = require('discord.js');
+const Twit = require('twit');
 const {
 	mongo_URI,
 	token,
@@ -17,7 +18,7 @@ const {
 	youtubeDiscordChannel,
 	youtubers,
 	youtubeAPI
-} = require('./config.json');
+} = require('../config.json');
 const mongoose = require('mongoose');
 const Reminder = require('../utils/models/Reminder');
 const setUpReminders = require('../utils/setUpReminders');
@@ -37,8 +38,13 @@ module.exports = {
   async execute(client) {
     client.playerManager = new Map();
     client.triviaManager = new Map();
+    client.twitchData = {
+      Interval: null,
+      embedStatus: null,
+      isRunning: false
+    };
     client.guildData = new Collection();
-    client.user.setActivity('/', { type: 'WATCHING' });
+    client.user.setActivity('.tv/JacksonUndercover', { type: 'WATCHING' });
     mongoose
       .connect(encodeURI(mongo_URI), {
         useNewUrlParser: true,
@@ -56,6 +62,17 @@ module.exports = {
     } catch {
       console.log('no reminders found');
     }
+
+  //REACTIONS - NEEDS TO BE CACHED TO WORK
+  client.channels.fetch(ReactionChannel).then(reactionCh => {
+	 reactionCh.messages.fetch(ReactionMessage).then(reactionMSG => {
+        console.log('Cached Reaction Message!');
+	 }).catch(err => {
+        console.log(err)
+     });
+  }).catch(err => {
+    console.log(err)
+  });
 
   //TWITTER
   const T = new Twit({
@@ -81,11 +98,13 @@ module.exports = {
         console.log('Couldnt find the Twitter Channel')
     })
   })
+
+  /*
   stream.on('error', function(err) {
 	  //console.log('Twitter Error')
       console.log(err)
   });
-
+  */
   //YOUTUBE INIT
   feeder.on('error', function(err) {
 	  console.log('Youtube Error')
@@ -94,22 +113,66 @@ module.exports = {
 
   check();
 
-  try {
-	//REACTIONS
-    let reactionCh = client.channels.fetch(ReactionChannel).then(reactionCh => {
-	    reactionCh.messages.fetch(ReactionMessage, true); //NEEDS TO BE CACHED TO WORK
-    }).catch(err => {
-        console.log(err)
-    })
+  console.log('Ready!');
 
-  } catch (error) {
-    console.error(error);
-  }
-
-    console.log('Ready!');
   }
 };
 
+/**
+ * Get the youtube channel id from an url
+ * @param {string} url The URL of the youtube channel
+ * @returns The channel ID || null
+ */
+function getYoutubeChannelIdFromURL(url) {
+    let id = null;
+    url = url.replace(/(>|<)/gi, "").split(/(\/channel\/|\/user\/)/);
+    if(url[2]) {
+      id = url[2].split(/[^0-9a-z_-]/i)[0];
+    }
+    return id;
+}
+
+/**
+ * Get infos for a youtube channel
+ * @param {string} name The name of the youtube channel or an url
+ * @returns The channel info || null
+ */
+async function getYoutubeChannelInfos(name){
+    //console.log(`[${name.length >= 10 ? name.slice(0, 10)+"..." : name}] | Resolving channel infos...`);
+    let channel = null;
+    /* Try to search by ID */
+    let id = getYoutubeChannelIdFromURL(name);
+    if(id){
+        channel = await youtube.getChannelByID(id);
+    }
+    if(!channel){
+        /* Try to search by name */
+        let channels = await youtube.searchChannels(name);
+        if(channels.length > 0){
+            channel = channels[0];
+        }
+    }
+    //console.log(`[${name.length >= 10 ? name.slice(0, 10)+"..." : name}] | Title of the resolved channel: ${channel.raw ? channel.raw.snippet.title : "err"}`);
+    return channel;
+}
+
+/**
+ * Check for new videos
+ */
+ //https://tjrgg.github.io/simple-youtube-api/master/Channel.html
+ //https://www.npmjs.com/package/rss-feed-emitter
+async function check(){
+    youtubers.forEach(async (youtuber) => {
+        let channelInfos = await getYoutubeChannelInfos(youtuber);
+        if(!channelInfos) return console.log("[ERR] | Invalid youtuber provided: "+youtuber);
+
+		  feeder.add({
+			  url: 'https://www.youtube.com/feeds/videos.xml?channel_id='+channelInfos.id,
+			  //refresh: 2000,
+			  eventName: 'newVideo'
+		  });
+    });
+}
 
 feeder.on('newVideo', function(video) {
      let channel = client.channels.cache.get(youtubeDiscordChannel);

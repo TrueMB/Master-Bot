@@ -12,7 +12,7 @@ const setUpReminders = (reminders, client) => {
         client.channels.cache.find(channel => {
           if (channel.id == remind.channelId) {
             channel.send(
-              `<@${remind.author}> :alarm_clock: Reminder: ${remind.text}`
+              `<@${remind.author}> :alarm_clock: Erinnerung: ${remind.text}`
             );
 
             Reminder.deleteOne({ _id: remind._id });

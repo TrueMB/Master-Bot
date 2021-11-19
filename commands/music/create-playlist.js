@@ -4,12 +4,12 @@ const Member = require('../../utils/models/Member');
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('create-playlist')
-    .setDescription('Create a custom playlist that you can play anytime')
+    .setDescription('Erstelle eine Playlist und spiele sie jeder Zeit ab!')
     .addStringOption(option =>
       option
         .setName('playlistname')
         .setDescription(
-          'What is the name of the playlist you would like to create?'
+          'Wie lautet der Name deiner Playlist?'
         )
         .setRequired(true)
     ),
@@ -30,10 +30,10 @@ module.exports = {
       user.save(function onErr(err) {
         if (err)
           return interaction.reply(
-            'An error has occured, please try again later'
+            'Es ist ein Fehler aufgetreten!'
           );
       });
-      interaction.reply(`Created a new playlist named **${playlistName}**`);
+      interaction.reply(`Es wurde eine neue Playlist: **${playlistName}** erstellt.`);
       return;
     }
     // make sure the playlist name isn't a duplicate
@@ -43,7 +43,7 @@ module.exports = {
       }).length > 0
     ) {
       interaction.reply(
-        `There is already a playlist named **${playlistName}** in your saved playlists!`
+        `Es existiert bereits eine Playlist mit dem Namen: **${playlistName}**!`
       );
       return;
     }
@@ -52,11 +52,11 @@ module.exports = {
     userData.savedPlaylists.push({ name: playlistName, urls: [] });
     try {
       await Member.updateOne({ memberId: interaction.member.id }, userData);
-      interaction.reply(`Created a new playlist named **${playlistName}**`);
+      interaction.reply(`Es wurde eine neue Playlist: **${playlistName}** erstellt.`);
     } catch (e) {
       console.error(e);
       return interaction.reply(
-        'There was a problem executing this command, please try again later'
+          'Es ist ein Fehler aufgetreten!'
       );
     }
   }

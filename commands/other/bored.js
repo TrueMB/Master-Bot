@@ -5,7 +5,7 @@ const { MessageEmbed } = require('discord.js');
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('bored')
-    .setDescription('Generate a random activity!'),
+    .setDescription('Generiere eine random Aktivität!'),
   execute(interaction) {
     fetch('https://www.boredapi.com/api/activity?participants=1')
       .then(res => res.json())
@@ -13,18 +13,17 @@ module.exports = {
         const embed = new MessageEmbed()
           .setColor('#6BA3FF')
           .setAuthor(
-            'Bored Activites',
+            'Mein Vorschlag:',
             'https://i.imgur.com/7Y2F38n.png',
             'https://www.boredapi.com/'
           )
           .setDescription(json.activity)
-          .setTimestamp()
-          .setFooter('Powered by boredapi.com', '');
+          .setTimestamp();
         interaction.reply({ embeds: [embed] });
         return;
       })
       .catch(err => {
-        interaction.reply('Failed to deliver activity :sob:');
+        interaction.reply('Konnte leider keine Aktivität für dich Laden :sob:');
         return console.error(err);
       });
   }

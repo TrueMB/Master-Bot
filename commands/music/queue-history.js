@@ -5,14 +5,14 @@ const { PagesBuilder } = require('discord.js-pages');
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('queue-history')
-    .setDescription('Display the music queue history'),
+    .setDescription('Zeigt den Warteschlangen Verlauf an'),
   execute(interaction) {
     const guildData = interaction.client.guildData.get(interaction.guildId);
     if (!guildData) {
-      return interaction.followUp('There is no music queue history!');
+      return interaction.followUp('Es existiert kein Warteschlangen Verlauf!');
     } else if (guildData) {
       if (!guildData.queueHistory.length) {
-        return interaction.followUp('There is no music queue history!');
+        return interaction.followUp('Es gibt keine Songs im Verlauf!');
       }
     }
 
@@ -35,7 +35,7 @@ module.exports = {
     }
 
     new PagesBuilder(interaction)
-      .setTitle('Music Queue')
+      .setTitle('Musik Warteschlange')
       .setPages(embeds)
       .setListenTimeout(2 * 60 * 1000)
       .setColor('#9096e6')

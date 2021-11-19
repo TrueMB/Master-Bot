@@ -9,17 +9,17 @@ module.exports = {
       option
         .setName('move')
         .setDescription(
-          'You ready for a game of Rock, Paper, Scissors? \n What is your move?'
+          'Schere, Stein, Papier'
         )
         .setRequired(true)
     ),
   execute(interaction) {
-    const replies = ['Rock', 'Paper', 'Scissors'];
+    const replies = ['Stein', 'Papier', 'Schere'];
     const reply = replies[Math.floor(Math.random() * replies.length)];
 
     const embed = new MessageEmbed()
       .setColor('RANDOM')
-      .setTitle('Rock, Paper, Scissors')
+      .setTitle('Schere, Stein, Papier')
       .setDescription(`**${reply}**`);
     return interaction.reply({ embeds: [embed] });
   }

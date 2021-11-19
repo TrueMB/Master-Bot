@@ -12,12 +12,12 @@ module.exports = {
   data: new SlashCommandBuilder()
     .setName('lyrics')
     .setDescription(
-      'Get the lyrics of any song or the lyrics of the currently playing song!'
+      'Bekomme die Lyrics von dem aktuellen Song oder einer definierten Suche'
     )
     .addStringOption(option =>
       option
         .setName('songname')
-        .setDescription(':mag: What song lyrics would you like to get?')
+        .setDescription('Zu welchem Song möchtest du die Lyrics?')
     ),
 
   async execute(interaction) {
@@ -28,12 +28,12 @@ module.exports = {
     if (!songName) {
       if (!player)
         return interaction.followUp(
-          'There is no song playing! Enter a song name or play a song'
+          'Es wird aktuell kein Song abgespielt. Bitte Suche nach einem oder starte einen Song.'
         );
       if (guildData) {
         if (guildData.triviaData.isTriviaRunning)
           return interaction.followUp(
-            ':x: Please try again after the trivia has ended'
+            ':x: Bitte versuche es nach dem Musik Quiz erneut.'
           );
       }
       songName = player.nowPlaying.title;
@@ -54,9 +54,8 @@ module.exports = {
         if (lyrics.trim().slice(b * 4096, i * 4096).length !== 0) {
           lyricsArray.push(
             new MessageEmbed()
-              .setTitle(`Lyrics page #` + i)
+              .setTitle(`Lyrics Seite #` + i)
               .setDescription(lyrics.slice(b * 4096, i * 4096))
-              .setFooter('Provided by genius.com')
           );
         }
       }
@@ -74,7 +73,7 @@ module.exports = {
     } catch (error) {
       console.error(error);
       return interaction.followUp(
-        'Something went wrong! Please try again later'
+         'Es ist ein Fehler aufgetreten!'
       );
     }
   }
@@ -101,7 +100,7 @@ function searchSong(query) {
       const songPath = result.response.hits[0].result.api_path;
       resolve(`https://api.genius.com${songPath}`);
     } catch (e) {
-      reject(':x: No song has been found for this query');
+      reject(':x: Es wurde keinen passenden Song für die Suche gefunden.');
     }
   });
 }

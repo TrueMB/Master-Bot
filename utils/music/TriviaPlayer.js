@@ -8,7 +8,7 @@ const {
   StreamType
 } = require('@discordjs/voice');
 const { setTimeout } = require('timers');
-const ytdl = require('ytdl-core');
+const ytdl = require('discord-ytdl-core');
 const { MessageEmbed } = require('discord.js');
 const { promisify } = require('util');
 const wait = promisify(setTimeout);
@@ -128,7 +128,7 @@ class TriviaPlayer {
 
           const embed = new MessageEmbed()
             .setColor('#ff7373')
-            .setTitle(`Music Quiz Results:`)
+            .setTitle(`Musik Quiz Ergebnis:`)
             .setDescription(
               getLeaderBoard(Array.from(sortedScoreMap.entries()))
             );
@@ -252,14 +252,14 @@ class TriviaPlayer {
               return b[1] - a[1];
             })
           );
-
+console.log(this.queue[0])
           const song = `${capitalize_Words(
             this.queue[0].singer
           )}: ${capitalize_Words(this.queue[0].title)}`;
 
           const embed = new MessageEmbed()
             .setColor('#ff7373')
-            .setTitle(`:musical_note: The song was:  ${song}`)
+            .setTitle(`:musical_note: Der Song lautete:  ${song}`)
             .setDescription(
               getLeaderBoard(Array.from(sortedScoreMap.entries()))
             );
@@ -284,10 +284,12 @@ class TriviaPlayer {
 
   async process(queue) {
     const song = this.queue[0];
+    const randomStartTime = Math.floor(Math.random() * (120 - song.length + 1) /*+ songLength*/);
     try {
       const stream = ytdl(song.url, {
         filter: 'audio',
         quality: 'highestaudio',
+		seek: randomStartTime,
         highWaterMark: 1 << 25
       });
       const resource = createAudioResource(stream, {

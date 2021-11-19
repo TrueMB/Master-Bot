@@ -5,20 +5,20 @@ const { MessageEmbed } = require('discord.js');
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('nowplaying')
-    .setDescription('Display the current playing song'),
+    .setDescription('Zeigt den aktiven Song an'),
   async execute(interaction) {
     const player = await interaction.client.playerManager.get(
       interaction.guildId
     );
 
     if (!player) {
-      return interaction.reply('There is nothing playing now!');
+      return interaction.reply('Es wird aktuell kein Song abgespielt!');
     } else if (player.audioPlayer.state.status !== AudioPlayerStatus.Playing) {
-      return interaction.reply('There is no song playing right now!');
+      return interaction.reply('Es wird aktuell kein Song abgespielt!');
     }
 
     const nowPlayingEmbed = new MessageEmbed()
-      .setTitle('Now playing')
+      .setTitle('Aktuell wird abgespielt:')
       .setColor('#ff0000')
       .setDescription(
         `[${player.nowPlaying.title}](${player.nowPlaying.url}) - **[${player.nowPlaying.memberDisplayName}]**`

@@ -5,12 +5,12 @@ const { MessageEmbed } = require('discord.js');
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('display-playlist')
-    .setDescription('Display a saved playlist')
+    .setDescription('Zeigt eine Playlist an')
     .addStringOption(option =>
       option
         .setName('playlistname')
         .setDescription(
-          'What is the name of the playlist you would like to display?'
+          'Welche Playlist möchtest du dir anzeigen lassen?'
         )
         .setRequired(true)
     ),
@@ -22,12 +22,12 @@ module.exports = {
       memberId: interaction.member.id
     }).exec();
     if (!userData) {
-      interaction.followUp('You have zero saved playlists!');
+      interaction.followUp('Du hast keine Playlists!');
       return;
     }
     const savedPlaylistsClone = userData.savedPlaylists;
     if (savedPlaylistsClone.length == 0) {
-      interaction.followUp('You have zero saved playlists!');
+      interaction.followUp('Du hast keine Playlists!');
       return;
     }
 
@@ -43,7 +43,7 @@ module.exports = {
     if (found) {
       let urlsArrayClone = savedPlaylistsClone[location].urls;
       if (urlsArrayClone.length == 0) {
-        interaction.followUp(`**${playlistName}** is empty!`);
+        interaction.followUp(`**${playlistName}** ist leer!`);
         return;
       }
       const savedPlaylistEmbed = new MessageEmbed()
@@ -62,7 +62,7 @@ module.exports = {
 
       interaction.followUp({ embeds: [savedPlaylistEmbed] });
     } else {
-      interaction.followUp(`You have no playlist named ${playlistName}`);
+      interaction.followUp(`Du besitzt keine Playlist mit dem Namen: ${playlistName}`);
     }
   }
 };

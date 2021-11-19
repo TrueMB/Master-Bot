@@ -4,17 +4,17 @@ const { MessageEmbed } = require('discord.js');
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('random')
-    .setDescription('Generate a random number between two provided numbers!')
+    .setDescription('Generiere eine Random Nummer zwischen zwei Zahlen!')
     .addIntegerOption(option =>
       option
         .setName('min')
-        .setDescription('What is the minimum number?')
+        .setDescription('Was ist die kleinste Nummer?')
         .setRequired(true)
     )
     .addIntegerOption(option =>
       option
         .setName('max')
-        .setDescription('What is the maximum number?')
+        .setDescription('Was ist die größte Nummer?')
         .setRequired(true)
     ),
 

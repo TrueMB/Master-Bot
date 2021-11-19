@@ -4,11 +4,11 @@ const Member = require('../../utils/models/Member');
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('delete-playlist')
-    .setDescription('Delete a playlist from your saved playlists')
+    .setDescription('Entferne eine Playlist')
     .addStringOption(option =>
       option
         .setName('playlistname')
-        .setDescription('Which playlist would you like to delete?')
+        .setDescription('Welche Playlist möchtest du entfernen?')
         .setRequired(true)
     ),
   async execute(interaction) {
@@ -19,12 +19,12 @@ module.exports = {
     }).exec();
 
     if (!userData) {
-      interaction.reply('You have zero saved playlists!');
+      interaction.reply('Du besitzt keine Playlists!');
       return;
     }
     const savedPlaylistsClone = userData.savedPlaylists;
     if (savedPlaylistsClone.length == 0) {
-      interaction.reply('You have zero saved playlists!');
+      interaction.reply('Du besitzt keine Playlists!');
       return;
     }
 
@@ -44,10 +44,10 @@ module.exports = {
         { savedPlaylists: savedPlaylistsClone }
       );
       interaction.reply(
-        `I removed **${playlistName}** from your saved playlists!`
+        `**${playlistName}** wurde von deinen Playlists entfernt!`
       );
     } else {
-      interaction.reply(`You have no playlist named ${playlistName}`);
+      interaction.reply(`Du besitzt keine Playlist mit dem Namen: ${playlistName}`);
     }
   }
 };

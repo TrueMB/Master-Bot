@@ -3,42 +3,42 @@ const { SlashCommandBuilder } = require('@discordjs/builders');
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('shuffle')
-    .setDescription('Shuffle the music queue!'),
+    .setDescription('Mische die Warteschlange!'),
 
   execute(interaction) {
     interaction.deferReply();
     const voiceChannel = interaction.member.voice.channel;
     if (!voiceChannel) {
       return interaction.followUp(
-        `:no_entry: You must be in the same voice channel as the bot in order to use that!`
+        `:no_entry: Du musst im gleichen Sprachkanal, wie der Bot sein!`
       );
     } else if (voiceChannel.id !== interaction.guild.me.voice.channel.id) {
       return interaction.followUp(
-        `:no_entry: You must be in the same voice channel as the bot in order to use that!`
+        `:no_entry: Du musst im gleichen Sprachkanal, wie der Bot sein!`
       );
     }
     const player = interaction.client.playerManager.get(interaction.guildId);
     if (!player) {
-      return interaction.followUp(':x: There is nothing playing right now!');
+      return interaction.followUp(':x: Es wird aktuell nichts abgespielt!');
     } else if (player.loopSong) {
       return interaction.followUp(
-        ':x: Turn off the **loop** command before using the **shuffle** command!'
+        ':x: Schalte zuerst die **Wiederholung** aus, bevor du **/shuffle** nutzt!'
       );
     }
 
     if (player.queue.length < 1) {
-      return interaction.followUp('There are no songs in queue!');
+      return interaction.followUp('Es sing keine Songs in der Warteschlange zum Mischen!');
     }
 
     if (player.commandLock) {
       return interaction.followUp(
-        'Please wait until play command is done processing'
+        'Bitte warte bis der Play Command verarbeitet wurde.'
       );
     }
 
     shuffleQueue(player.queue);
 
-    return interaction.followUp('The music queue has been shuffled!');
+    return interaction.followUp('Die Warteschlange wurde gemischt!');
   }
 };
 

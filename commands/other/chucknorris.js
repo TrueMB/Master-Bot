@@ -5,7 +5,7 @@ const { MessageEmbed } = require('discord.js');
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('chucknorris')
-    .setDescription('Get a satirical fact about Chuck Norris!'),
+    .setDescription('Bekomme Chuck Norris Fakten!'),
   execute(interaction) {
     // thanks to https://api.chucknorris.io
     fetch('https://api.chucknorris.io/jokes/random')
@@ -19,13 +19,12 @@ module.exports = {
             'https://chucknorris.io'
           )
           .setDescription(json.value)
-          .setTimestamp()
-          .setFooter('Powered by chucknorris.io', '');
+          .setTimestamp();
         interaction.reply({ embeds: [embed] });
         return;
       })
       .catch(err => {
-        interaction.reply(':x: An error occured, Chuck is investigating this!');
+        interaction.reply(':x: Ein Fehler ist aufgetreten. Chuck untersucht das!');
         return console.error(err);
       });
   }

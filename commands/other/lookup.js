@@ -15,6 +15,11 @@ module.exports = {
         .setRequired(true)
     ),
   async execute(interaction) {
+
+    let owner = await interaction.guild.fetchOwner();
+    if(interaction.member != owner)
+      return interaction.reply(':x: Der Command ist nur für den Server Besitzer!');
+
     const resl = interaction.options.get('query').value;
 
     try {

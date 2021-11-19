@@ -4,33 +4,30 @@ const { AudioPlayerStatus } = require('@discordjs/voice');
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('skip')
-    .setDescription('Skip the currently playing song!'),
+    .setDescription('Überspringe den aktuellen Song!'),
   async execute(interaction) {
     const voiceChannel = interaction.member.voice.channel;
     if (!voiceChannel) {
-      return interaction.reply('Please join a voice channel and try again!');
+      return interaction.reply('Bitte betrete einen Sprachkanal und versuche es dann erneut.');
     }
 
     const player = interaction.client.playerManager.get(interaction.guildId);
     if (player.audioPlayer.state.status !== AudioPlayerStatus.Playing) {
-      return interaction.reply('There is no song playing right now!');
+      return interaction.reply('Es wird aktuell kein Song abgespielt!');
     } else if (voiceChannel.id !== interaction.guild.me.voice.channel.id) {
       return interaction.reply(
-        'You must be in the same voice channel as the bot in order to skip!'
+        'Du musst im gleichen Sprachkanal, wie der Bot sein!'
       );
     } else if (
       interaction.guild.client.guildData.get(interaction.guild.id)
         .isTriviaRunning
     ) {
       return interaction.reply(
-        `You can't skip a trivia! Use end-trivia command instead`
+        `Das Musik Quiz wird ohne '/' übersprungen! **skip**`
       );
     }
     interaction.reply(
-      `Skipped **${
-        interaction.client.playerManager.get(interaction.guildId).nowPlaying
-          .title
-      }**`
+      `**${interaction.client.playerManager.get(interaction.guildId).nowPlaying.title}** wurde übersprungen`
     );
     player.audioPlayer.stop();
   }

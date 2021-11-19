@@ -4,12 +4,12 @@ const Member = require('../../utils/models/Member');
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('remove-from-playlist')
-    .setDescription('Remove a song from a saved playlist')
+    .setDescription('Entferne einen Song aus deiner Playlist')
     .addStringOption(option =>
       option
         .setName('playlist')
         .setDescription(
-          'What is the playlist you would like to delete a song from?'
+          'Von welcher Playlist möchtest du einen Song entfernen?'
         )
         .setRequired(true)
     )
@@ -17,7 +17,7 @@ module.exports = {
       option
         .setName('index')
         .setDescription(
-          'What is the index of the video you would like to delete from your saved playlist?'
+          'Welche Position hat der Song, den du entfernen möchtest?'
         )
         .setRequired(true)
     ),
@@ -31,11 +31,11 @@ module.exports = {
       memberId: interaction.member.id
     }).exec();
     if (!userData) {
-      return interaction.followUp('You have no custom playlists!');
+      return interaction.followUp('Du besitzt keine Playlists!');
     }
     const savedPlaylistsClone = userData.savedPlaylists;
     if (savedPlaylistsClone.length == 0) {
-      return interaction.followUp('You have no custom playlists!');
+      return interaction.followUp('Du besitzt keine Playlists!');
     }
 
     let found = false;
@@ -55,7 +55,7 @@ module.exports = {
       }
       if (index > urlsArrayClone.length) {
         interaction.followUp(
-          `The index you provided is larger than the playlist's length`
+          `Die genannte Position ist größer als die Playlist Größe.`
         );
         return;
       }
@@ -68,11 +68,11 @@ module.exports = {
       ).exec();
 
       interaction.followUp(
-        `I removed **${title}** from **${savedPlaylistsClone[location].name}**`
+        `**${title}** wurde von **${savedPlaylistsClone[location].name}** entfernt.`
       );
       return;
     } else {
-      return interaction.followUp(`You have no playlist named ${playlistName}`);
+      return interaction.followUp(`Du besitzt keine Playlist mit dem Namen: ${playlistName}`);
     }
   }
 };

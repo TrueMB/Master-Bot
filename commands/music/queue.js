@@ -5,24 +5,24 @@ const { PagesBuilder } = require('discord.js-pages');
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('queue')
-    .setDescription('Display the music queue'),
+    .setDescription('Zeigt die Warteschlange an'),
   async execute(interaction) {
     await interaction.deferReply();
     const guildData = interaction.client.guildData.get(interaction.guildId);
     if (guildData) {
       if (guildData.triviaData.isTriviaRunning) {
         return interaction.followUp(
-          ':x: Try again after the trivia has ended!'
+          ':x: Bitte versuche es nach dem Musik Quiz erneut!'
         );
       }
     }
     const player = interaction.client.playerManager.get(interaction.guildId);
     if (player) {
       if (player.queue.length == 0) {
-        return interaction.followUp(':x: There are no songs in queue!');
+        return interaction.followUp(':x: Es sind keine Songs in der Warteschlange!');
       }
     } else if (!player) {
-      return interaction.followUp(':x: There is nothing playing right now!');
+      return interaction.followUp(':x: Es wird aktuell kein Song abgepsielt!');
     }
 
     const queueClone = Array.from(player.queue);
@@ -43,7 +43,7 @@ module.exports = {
     }
 
     new PagesBuilder(interaction)
-      .setTitle('Music Queue')
+      .setTitle('Musik Warteschlange')
       .setPages(embeds)
       .setListenTimeout(2 * 60 * 1000)
       .setColor('#9096e6')

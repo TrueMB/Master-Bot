@@ -5,18 +5,18 @@ const fs = require('fs');
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('8ball')
-    .setDescription('Get the answer to anything!')
+    .setDescription('Bekomme die Antwort auf alles!')
     .addStringOption(option =>
       option
         .setName('question')
-        .setDescription('What do you want to ask?')
+        .setDescription('Was möchtest du Fragen?')
         .setRequired(true)
     ),
   execute(interaction) {
     const question = interaction.options.get('question').value;
 
     if (question.length > 255) {
-      return interaction.reply('Please ask a shorter question!');
+      return interaction.reply('Bitte fasse deine Frage kürzer!');
     }
 
     const ballAnswers = fs.readFileSync(
@@ -30,7 +30,7 @@ module.exports = {
 
     const answerEmbed = new MessageEmbed()
       .setTitle(question)
-      .setAuthor('Magic 8 Ball', 'https://i.imgur.com/HbwMhWM.png')
+      .setAuthor('Magische Kugel', 'https://i.imgur.com/HbwMhWM.png')
       .setDescription(randomAnswer.text)
       .setColor('#000000')
       .setTimestamp();

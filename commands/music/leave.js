@@ -4,24 +4,24 @@ const { AudioPlayerStatus } = require('@discordjs/voice');
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('leave')
-    .setDescription('Leaves a voice channel if in one!'),
+    .setDescription('Verlässt den Sprachkanal'),
   execute(interaction) {
     const voiceChannel = interaction.member.voice.channel;
     if (!voiceChannel) {
-      return interaction.reply('Please join a voice channel and try again!');
+      return interaction.reply('Ich bin in keinem Sprachkanal! :(');
     }
 
     const player = interaction.client.playerManager.get(interaction.guildId);
-    if (!player) {
-      return interaction.reply('There is no song playing right now!');
+    if (!player) { //ERGIBT DIESE ABFRAGE SINN?  - BOT KANN PAUSIERT SEIN
+      return interaction.reply('Es wird aktuell kein Song abgespielt!');
     } else if (voiceChannel.id !== interaction.guild.me.voice.channel.id) {
       return interaction.reply(
-        'You must be in the same voice channel as the bot in order for bot to leave!'
+        'Du musst im gleichen Sprachkanal sein, um diesen Command ausführen zu können!'
       );
     }
 
     player.connection.destroy();
     interaction.client.playerManager.delete(interaction.guildId);
-    return interaction.reply('Left your voice channel!');
+    return interaction.reply('Bye bye! :(');
   }
 };
