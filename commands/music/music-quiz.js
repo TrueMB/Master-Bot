@@ -65,36 +65,40 @@ module.exports = {
     );
     const videoDataArray = JSON.parse(jsonSongs).songs;
     // get random numberOfSongs videos from the array
+	try{
+      const randomLinks = getRandom(videoDataArray, numberOfSongs);
 
-    const randomLinks = getRandom(videoDataArray, numberOfSongs);
-    interaction.client.triviaManager.set(
-      interaction.guildId,
-      new TriviaPlayer()
-    );
+      interaction.client.triviaManager.set(
+        interaction.guildId,
+        new TriviaPlayer()
+      );
 
-    const triviaPlayer = interaction.client.triviaManager.get(
-      interaction.guildId
-    );
+      const triviaPlayer = interaction.client.triviaManager.get(
+        interaction.guildId
+      );
 
-    randomLinks.forEach(link => {
-      triviaPlayer.queue.push({
-        url: link.url,
-        singer: link.singer,
-        title: link.title,
-        length: lengthOfSongs,
-        voiceChannel
+      randomLinks.forEach(link => {
+        triviaPlayer.queue.push({
+          url: link.url,
+          singer: link.singer,
+          title: link.title,
+          length: lengthOfSongs,
+          voiceChannel
+        });
       });
-    });
 
-    const membersInChannel = interaction.member.voice.channel.members;
+      const membersInChannel = interaction.member.voice.channel.members;
 
-    membersInChannel.each(user => {
-      if (user.user.bot) return;
-      triviaPlayer.score.set(user.user.username, 0);
-    });
+      membersInChannel.each(user => {
+        if (user.user.bot) return;
+        triviaPlayer.score.set(user.user.username, 0);
+      });
 
-    // play and display embed that says trivia started and how many songs are going to be
-    handleSubscription(interaction, triviaPlayer);
+      // play and display embed that says trivia started and how many songs are going to be
+      handleSubscription(interaction, triviaPlayer);
+	}catch(error){
+      return interaction.followUp('Es existieren nicht so viele Songs für die Kategorie!');
+	}
   }
 };
 

@@ -11,7 +11,7 @@ module.exports = {
         .execute(interaction);
     } catch (error) {
       console.error(error);
-      return interaction.reply({
+      return interaction.followUp({
         content: 'Da ist etwas beim ausführen des Commands schief gelaufen!',
         ephemeral: true
       });
