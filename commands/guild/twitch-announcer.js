@@ -247,7 +247,7 @@ module.exports = {
               )
               .addField('Stream Titel:', streamInfo.data[0].title)
               .addField('Spiel:', streamInfo.data[0].game_name, true)
-              .addField('Zuschauer:', streamInfo.data[0].viewer_count, true)
+              .addField('Zuschauer:', streamInfo.data[0].viewer_count + '', true)
               .setColor('#6441A4')
               .setFooter(
                 'Stream gestartet',
@@ -259,7 +259,7 @@ module.exports = {
                   .concat('?r=' + Math.floor(Math.random() * 10000 + 1)) // to ensure the image updates when refreshed
               )
               .setTimestamp(streamInfo.data[0].started_at)
-              .attachFiles(attachment)
+              //.attachFiles(attachment)
               .setThumbnail('attachment://box_art.png');
 
             if (user.data[0].broadcaster_type == '')
@@ -276,18 +276,18 @@ module.exports = {
             try {
               if (twitchData.message.toLowerCase() != 'none') {
                 await announcedChannel.send(twitchData.message),
-                  await announcedChannel.send(onlineEmbed).then(result => {
+                  await announcedChannel.send( { embeds: [onlineEmbed], files: [attachment] }).then(result => {
                     embedID = result.id;
                   });
               } else {
-                await announcedChannel.send(onlineEmbed).then(result => {
+                await announcedChannel.send( { embeds: [onlineEmbed], files: [attachment] }).then(result => {
                   embedID = result.id;
                 });
               }
             } catch (error) {
               ++failedAttempts;
               if (failedAttempts == 5) {
-                message.reply(':x: Konnte keine Nachricht geschickt werden.');
+                interaction.followUp(':x: Konnte keine Nachricht geschickt werden.');
                 console.log(error);
                 interaction.client.twitchData.isRunning = false;
                 interaction.client.twitchData.Interval = clearInterval(
@@ -368,7 +368,7 @@ module.exports = {
                 })
                 .then(msg => {
                   const fetchedMsg = msg.first();
-                  fetchedMsg.edit(offlineEmbed);
+                  fetchedMsg.edit( {embeds: [offlineEmbed]} );
                 });
             } catch (error) {
               ++failedAttempts;

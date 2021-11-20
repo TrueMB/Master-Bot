@@ -72,7 +72,7 @@ class TriviaPlayer {
       if (
         newState.status === AudioPlayerStatus.Idle &&
         oldState.status !== AudioPlayerStatus.Idle
-      ) {
+      ) { //Bot played song and goes in inactivity
         this.queue.shift();
         // Finished playing audio
         if (this.queue.length) {
@@ -142,7 +142,7 @@ class TriviaPlayer {
             );
           }
         }
-      } else if (newState.status === AudioPlayerStatus.Playing) {
+      } else if (newState.status === AudioPlayerStatus.Playing) { //BOT is currently playing a song
         // trivia logic
         let songNameFound = false;
         let songSingerFound = false;
@@ -151,7 +151,7 @@ class TriviaPlayer {
         const skippedArray = [];
 
         const collector = this.textChannel.createMessageCollector({
-          time: 30000
+          time: this.queue[0].length * 1000
         });
 
         collector.on('collect', msg => {
@@ -164,6 +164,7 @@ class TriviaPlayer {
             if (skippedArray.includes(msg.author.username)) {
               return;
             }
+            msg.react('☑');
             skippedArray.push(msg.author.username);
             skipCounter++;
             if (skipCounter > this.score.size * 0.6) {
@@ -187,7 +188,7 @@ class TriviaPlayer {
             }
             this.score.set(
               msg.author.username,
-              this.score.get(msg.author.username) + 2
+              this.score.get(msg.author.username) + 3
             );
             msg.react('☑');
             return collector.stop();
@@ -252,7 +253,7 @@ class TriviaPlayer {
               return b[1] - a[1];
             })
           );
-console.log(this.queue[0])
+
           const song = `${capitalize_Words(
             this.queue[0].singer
           )}: ${capitalize_Words(this.queue[0].title)}`;
@@ -271,7 +272,12 @@ console.log(this.queue[0])
     });
 
     this.audioPlayer.on('error', error => {
-      console.error(error);
+      if(song === undefined){
+         this.textChannel.send('Couldnt load the Song Data...');
+	  }else{
+		 console.error(error);
+		 this.textChannel.send('Error with the video: ' + song.url + '\n' + song.singer + ' - ' + song.title);
+	  }
     });
 
     this.connection.subscribe(this.audioPlayer);
@@ -283,12 +289,14 @@ console.log(this.queue[0])
   }
 
   async process(queue) {
-    const song = this.queue[0];
+    const song = this.queue[0]; //Always first entry, since after the ending it gets shiftet away
+
     const randomStartTime = Math.floor(Math.random() * (120 - song.length + 1) /*+ songLength*/);
     try {
       const stream = ytdl(song.url, {
         filter: 'audio',
         quality: 'highestaudio',
+        fmt: 'mp3',
 		seek: randomStartTime,
         highWaterMark: 1 << 25
       });
@@ -297,7 +305,7 @@ console.log(this.queue[0])
       });
       this.audioPlayer.play(resource);
     } catch (err) {
-      console.error(err);
+		console.error(err);
       return this.process(queue);
     }
   }
@@ -308,12 +316,12 @@ var getLeaderBoard = arr => {
   if (!arr[0]) return; // issue #422
   let leaderBoard = '';
 
-  leaderBoard = `👑   **${arr[0][0]}:** ${arr[0][1]}  points`;
+  leaderBoard = `👑   **${arr[0][0]}:** ${arr[0][1]}  Punkte`;
 
   if (arr.length > 1) {
     for (let i = 1; i < arr.length; i++) {
       leaderBoard =
-        leaderBoard + `\n\n   ${i + 1}: ${arr[i][0]}: ${arr[i][1]}  points`;
+        leaderBoard + `\n\n   ${i + 1}: ${arr[i][0]}: ${arr[i][1]}  Punkte`;
     }
   }
   return leaderBoard;
