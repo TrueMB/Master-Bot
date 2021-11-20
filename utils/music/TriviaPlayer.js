@@ -294,9 +294,11 @@ class TriviaPlayer {
     const randomStartTime = Math.floor(Math.random() * (120 - song.length + 1) /*+ songLength*/);
     try {
       const stream = ytdl(song.url, {
-        filter: 'audio',
+        //filter: 'audio',
+        filter: 'audioonly',
         quality: 'highestaudio',
         fmt: 'mp3',
+        //opusEncoded: true,
 		seek: randomStartTime,
         highWaterMark: 1 << 25
       });

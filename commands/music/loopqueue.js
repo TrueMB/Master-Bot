@@ -51,11 +51,14 @@ module.exports = {
 
     if (player.loopQueue) {
       player.loopQueue = false;
+      player.looptimes = 0;
       return interaction.reply(
         ':repeat: Die Warteschlange ist nun nicht mehr in der **Wiederholung**'
       );
     }
+    player.loopSong = false;
     player.loopQueue = true;
-    return interaction.reply(':repeat: Die Warteschlange wird nun **wiederholt**');
+    player.looptimes = looptimes;
+    return interaction.reply(':repeat: Die Warteschlange wird nun **' + looptimes + 'x wiederholt**');
   }
 };

@@ -21,6 +21,7 @@ class MusicPlayer {
     this.skipTimer = false;
     this.loopSong = false;
     this.loopQueue = false;
+    this.loopTimes = 0;
     this.volume = 1;
     this.commandLock = false;
     this.textChannel;
@@ -79,6 +80,12 @@ class MusicPlayer {
         newState.status === AudioPlayerStatus.Idle &&
         oldState.status !== AudioPlayerStatus.Idle
       ) {
+		if(this.looptimes > 0){
+	      this.looptimes--;
+		}else{
+	      this.loopSong = false;
+	      this.loopQueue = false;
+		}
         if (this.loopSong) {
           this.process(this.queue.unshift(this.nowPlaying));
         } else if (this.loopQueue) {
@@ -136,6 +143,7 @@ class MusicPlayer {
     this.isPreviousTrack = false;
     this.loopSong = false;
     this.loopQueue = false;
+    this.loopTimes = 0;
     this.audioPlayer.stop(true);
   }
 
@@ -152,9 +160,11 @@ class MusicPlayer {
     try {
       //const resource = await this.createAudioResource(song.url);
       const stream = ytdl(song.url, {
-        filter: 'audio',
+        //filter: 'audio',
+        filter: 'audioonly',
         quality: 'highestaudio',
         fmt: 'mp3',
+        //opusEncoded: true,
 		seek: song.timestamp,
         highWaterMark: 1 << 25
       });

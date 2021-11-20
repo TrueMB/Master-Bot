@@ -105,7 +105,7 @@ module.exports = {
 
     if (player.commandLock) {
       return interaction.followUp(
-        'Bitte warte bis der letzte Wunsch abgespielt wurde.'
+        'Bitte warte bis der letzte Wunsch geladen wurde.'
       );
     }
 
@@ -576,8 +576,10 @@ module.exports = {
       }
       timestamp = Number(timestamp);
 
-      const video = await YouTube.getVideo(query).catch(function() {
+      const video = await YouTube.getVideo(query).catch(function(error) {
         deletePlayerIfNeeded(interaction);
+        player.commandLock = false;
+		console.log(error);
         interaction.followUp(
           ':x: Konnte dein Video nicht laden!'
         );
@@ -622,7 +624,7 @@ module.exports = {
         );
       }
 
-      if (player.audioPlayer.state.status !== AudioPlayerStatus.Playing) {
+      if (player.audioPlayer.state.status !== AudioPlayerStatus.Playing && player.audioPlayer.state.status !== AudioPlayerStatus.Buffering) {
         handleSubscription(player.queue, interaction, player);
         return;
       }
@@ -675,7 +677,7 @@ var handleSubscription = async (queue, interaction, player) => {
     return;
   }
   player.process(player.queue);
-  await interaction.followUp(`Enqueued ${title}`);
+  await interaction.followUp(`${title} wurde zur Warteschlange hinzugefügt.`);
 };
 
 // var playbackBar = data => {

@@ -4,8 +4,12 @@ const createGuildData = require('../../utils/createGuildData');
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('loop')
-    .setDescription('Wiederhole einen Song!'),
-
+    .setDescription('Wiederhole den aktuellen Song X mal - (Standard ist 1x)')
+    .addIntegerOption(option =>
+      option
+        .setName('looptimes')
+        .setDescription('Wie oft soll wiederholt werden?')
+    ),
   execute(interaction) {
     if (!interaction.client.guildData.get(interaction.guildId)) {
       interaction.client.guildData.set(interaction.guildId, createGuildData());
@@ -32,16 +36,26 @@ module.exports = {
       );
     }
 
+    let looptimes = interaction.options.get('looptimes');
+    if (!looptimes) {
+      looptimes = 1;
+    } else {
+      looptimes = looptimes.value;
+    }
+
     if (player.loopSong) {
       player.loopSong = false;
+      player.looptimes = 0;
       return interaction.reply(
         `**${player.nowPlaying.title}** wird nun nicht mehr wiederholt :repeat: `
       );
     }
 
     player.loopSong = true;
-    interaction.reply(
-      `**${player.nowPlaying.title}** wird nun wiederholt :repeat: `
+    player.loopQueue = false;
+    player.looptimes = looptimes;
+    return interaction.reply(
+      `**${player.nowPlaying.title}** wird nun ${looptimes}x wiederholt :repeat: `
     );
   }
 };
