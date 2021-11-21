@@ -95,6 +95,7 @@ module.exports = {
       });
 
       // play and display embed that says trivia started and how many songs are going to be
+	  triviaPlayer.queueMax = numberOfSongs;
       handleSubscription(interaction, triviaPlayer);
 	}catch(error){
       return interaction.followUp('Es existieren nicht so viele Songs für die Kategorie!');

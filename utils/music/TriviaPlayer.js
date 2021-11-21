@@ -21,6 +21,7 @@ class TriviaPlayer {
     this.score = new Map();
     this.users = new Map();
     this.queue = [];
+	this.queueMax = 0;
     this.textChannel;
     this.wasTriviaEndCalled = false;
   }
@@ -260,7 +261,7 @@ class TriviaPlayer {
 
           const embed = new MessageEmbed()
             .setColor('#ff7373')
-            .setTitle(`:musical_note: Der Song lautete:  ${song}`)
+            .setTitle(`:musical_note: Der Song lautete:  ${song} (${this.queueMax - this.queue.length + 1}/${this.queueMax})`)
             .setDescription(
               getLeaderBoard(Array.from(sortedScoreMap.entries()))
             );
@@ -272,7 +273,7 @@ class TriviaPlayer {
     });
 
     this.audioPlayer.on('error', error => {
-      if(song === undefined){
+      if(typeof song === "undefined"){
          this.textChannel.send('Couldnt load the Song Data...');
 	  }else{
 		 console.error(error);
@@ -285,6 +286,7 @@ class TriviaPlayer {
 
   stop() {
     this.queue.length = 0;
+	this.queueMax = 0;
     this.audioPlayer.stop(true);
   }
 
