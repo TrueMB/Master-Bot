@@ -187,7 +187,7 @@ module.exports = {
         clarificationCollector.on('collect', async i => {
           if (i.user.id !== interaction.user.id) {
             i.reply({
-              content: `This element is not for you!`,
+              content: `Das ist nicht für dich gedacht!`,
               ephemeral: true
             });
           } else {
@@ -576,7 +576,7 @@ module.exports = {
       }
       timestamp = Number(timestamp);
 
-      const video = await YouTube.searchOne(query).catch(function (e) {
+      const video = await YouTube.getVideo(query).catch(function (e) {
         console.error(e);
         deletePlayerIfNeeded(interaction);
         interaction.followUp(
@@ -584,7 +584,14 @@ module.exports = {
         );
         player.commandLock = false;
       });
-      if (!video) return;
+
+      if (!video){
+        interaction.followUp(
+          ':x: Konnte dein Video nicht laden!'
+        );
+        player.commandLock = false;
+		return;
+	  }
       if (video.live === 'live' && !playLiveStreams) {
         player.commandLock = false;
         deletePlayerIfNeeded(interaction);
@@ -624,10 +631,15 @@ module.exports = {
         );
       }
 
-      if (player.audioPlayer.state.status !== AudioPlayerStatus.Playing && player.audioPlayer.state.status !== AudioPlayerStatus.Buffering) {
+      if (player.audioPlayer.state.status !== AudioPlayerStatus.Playing) {
         handleSubscription(player.queue, interaction, player);
         return;
       }
+
+	  player.commandLock = false;
+      interaction.followUp(
+	    `Song wurde zur Warteschlange hinzugefügt.`
+      );
 
       // interactiveEmbed(interaction)
       //   .addField('Added to Queue', `:new: [${video.title}](${video.url})`)
