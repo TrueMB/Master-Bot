@@ -1,4 +1,5 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
+const { AudioPlayerStatus } = require('@discordjs/voice');
 const Member = require('../../utils/models/Member');
 const YouTube = require('youtube-sr').default;
 const { getData } = require('spotify-url-info');
@@ -7,41 +8,55 @@ const { searchOne } = require('../../utils/music/searchOne');
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('save-to-playlist')
-    .setDescription('Speichere einen Song oder Playlist in deine eigene Playlist')
+    .setDescription('Save a song or a playlist to a custom playlist')
     .addStringOption(option =>
       option
         .setName('playlistname')
-        .setDescription('In welche Playlist soll gespeichert werden?')
+        .setDescription('What is the playlist you would like to save to?')
         .setRequired(true)
     )
     .addStringOption(option =>
       option
         .setName('url')
         .setDescription(
-          'Welchen Song oder Playlist möchtest du hinzufügen?'
+          'What url would you like to save to playlist? It can also be a playlist url'
         )
-        .setRequired(true)
     ),
   async execute(interaction) {
     await interaction.deferReply();
 
     const playlistName = interaction.options.get('playlistname').value;
-    const url = interaction.options.get('url').value;
+
+    let url = interaction.options.get('url');
+
+    if (!url) {
+      const player = await interaction.client.playerManager.get(interaction.guildId);
+
+      if (!player) {
+        return interaction.followUp('There is no song playing right now! Provide a valid URL to save');
+        // can happen between songs, not a redundant statement
+      } else if (player.audioPlayer.state.status !== AudioPlayerStatus.Playing) {
+        return interaction.followUp('There is no song playing right now! Provide a valid URL to save');
+      }
+      url = player.nowPlaying.url;
+    } else {
+      url = url.value;
+    }
 
     const userData = await Member.findOne({
       memberId: interaction.member.id
     }).exec();
     if (!userData) {
-      return interaction.followUp('Du besitzt keine Playlists!');
+      return interaction.followUp('You have no custom playlists!');
     }
     const savedPlaylistsClone = userData.savedPlaylists;
     if (savedPlaylistsClone.length == 0) {
-      return interaction.followUp('Du besitzt keine Playlists!');
+      return interaction.followUp('You have no custom playlists!');
     }
 
     if (!validateURL(url)) {
       return interaction.followUp(
-        'Bitte gib einen Korrekt YouTube oder Spotify Link ein!'
+        'Please enter a valid YouTube or Spotify URL!'
       );
     }
 
@@ -62,14 +77,16 @@ module.exports = {
           urlsArrayClone = urlsArrayClone.concat(processedURL);
           savedPlaylistsClone[location].urls = urlsArrayClone;
           interaction.followUp(
-            'Deine genannte Playlist wurde gespeichert!'
+            'The playlist you provided was successfully saved!'
           );
         } else {
           urlsArrayClone.push(processedURL);
           savedPlaylistsClone[location].urls = urlsArrayClone;
           interaction.followUp(
-            `**${savedPlaylistsClone[location].urls[savedPlaylistsClone[location].urls.length - 1].title}**
-            wurde zu **${playlistName}** gespeichert`
+            `I added **${savedPlaylistsClone[location].urls[
+              savedPlaylistsClone[location].urls.length - 1
+            ].title
+            }** to **${playlistName}**`
           );
         }
         Member.updateOne(
@@ -78,7 +95,7 @@ module.exports = {
         ).exec();
       });
     } else {
-      return interaction.followUp(`Du besitzt keine Playlist mit dem Namen: ${playlistName}`);
+      return interaction.followUp(`You have no playlist named ${playlistName}`);
     }
   }
 };
@@ -106,7 +123,7 @@ function constructSongObj(video, user) {
 }
 
 async function processURL(url, interaction) {
-  return new Promise(async function(resolve, reject) {
+  return new Promise(async function (resolve, reject) {
     if (isSpotifyURL(url)) {
       getData(url)
         .then(async data => {
@@ -131,8 +148,8 @@ async function processURL(url, interaction) {
     } else if (
       url.match(/^https?:\/\/(www.youtube.com|youtube.com)\/playlist(.*)$/)
     ) {
-      const playlist = await YouTube.getPlaylist(url).catch(function() {
-        reject(':x: Playlist ist Privat oder existiert nicht!');
+      const playlist = await YouTube.getPlaylist(url).catch(function () {
+        reject(':x: Playlist is either private or it does not exist!');
       });
       let videosArr = await playlist.fetch();
       videosArr = videosArr.videos;
@@ -147,11 +164,11 @@ async function processURL(url, interaction) {
       }
       resolve(urlsArr);
     } else {
-      const video = await YouTube.getVideo(url).catch(function() {
-        reject(':x: Es gab ein Problem mit deinem genannten Link!');
+      const video = await YouTube.searchOne(url).catch(function () {
+        reject(':x: There was a problem getting the video you provided!');
       });
       if (video.live) {
-        reject("Live Streams sind leider nicht möglich!");
+        reject("I don't support live streams!");
       }
       resolve(constructSongObj(video, interaction.member.user));
     }

@@ -58,7 +58,7 @@ module.exports = {
       option
         .setName('query')
         .setDescription(
-          '🎶 Welcher Song oder Playlist soll abgepsielt werden? Benutze -s für eine Random Reihenfolge.'
+          '🎶 What song or playlist would you like to listen to? Add -s to shuffle a playlist'
         )
         .setRequired(true)
     ),
@@ -72,7 +72,7 @@ module.exports = {
     // Make sure that only users present in a voice channel can use 'play'
     if (!interaction.member.voice.channel) {
       interaction.followUp(
-        ':no_entry: Bitte betrete zuerst einen Sprachkanal.!'
+        ':no_entry: Please join a voice channel and try again!'
       );
       return;
     }
@@ -81,7 +81,7 @@ module.exports = {
       interaction.client.guildData.get(interaction.guild.id).triviaData
         .isTriviaRunning
     ) {
-      interaction.followUp(':x: Bitte versuche es nach dem Musik Quiz erneut!');
+      interaction.followUp(':x: Please try after the trivia has ended!');
       return;
     }
     let query = interaction.options.get('query').value;
@@ -105,7 +105,7 @@ module.exports = {
 
     if (player.commandLock) {
       return interaction.followUp(
-        'Bitte warte bis der letzte Wunsch geladen wurde.'
+        'Please wait until the last play call is processed'
       );
     }
 
@@ -125,24 +125,24 @@ module.exports = {
         const fields = [
           {
             label: 'Playlist',
-            description: 'Wähle eine Playlist',
+            description: 'Select playlist',
             value: 'playlist_option',
             emoji: '⏩'
           },
           {
             label: 'Shuffle Playlist',
-            description: 'Wähle eine Playlist und Randomize sie',
+            description: 'Select playlist and shuffle',
             value: 'shuffle_option',
             emoji: '🔀'
           },
           {
             label: 'YouTube',
-            description: 'Suche auf YouTube',
+            description: 'Search on YouTube',
             value: 'youtube_option',
             emoji: '🔍'
           },
           {
-            label: 'Abbrechen',
+            label: 'Cancel',
             value: 'cancel_option',
             emoji: '❌'
           }
@@ -156,7 +156,7 @@ module.exports = {
           hasHistoryField = true;
           fields.unshift({
             name: `play ${player.queueHistory[index].title}`,
-            description: 'Spiele letzten Song',
+            description: 'Play last song',
             value: 'previous_song_option',
             emoji: '🔙'
           });
@@ -164,11 +164,11 @@ module.exports = {
         const row = new MessageActionRow().addComponents(
           new MessageSelectMenu()
             .setCustomId('1')
-            .setPlaceholder('Bitte wähle eine Option')
+            .setPlaceholder('Please select an option')
             .addOptions(fields)
         );
         const clarificationOptions = await message.channel.send({
-          content: 'Bitte auswählen',
+          content: 'Clarify Please',
           components: [row]
         });
 
@@ -218,7 +218,7 @@ module.exports = {
                 }
                 player.commandLock = false;
                 interaction.followUp(
-                  `'${player.queueHistory[index].title}' wurde zur Warteschlange hinzugefügt!`
+                  `'${player.queueHistory[index].title}' was added to queue!`
                 );
                 break;
               // 1: Play the saved playlist
@@ -227,7 +227,7 @@ module.exports = {
                   player.queue.push(song)
                 );
                 player.commandLock = false;
-                await interaction.followUp('Playlist wurde zur Warteschlange hinzugefügt.');
+                await interaction.followUp('Added playlist to queue');
                 if (
                   player.audioPlayer.state.status === AudioPlayerStatus.Playing
                 ) {
@@ -300,29 +300,29 @@ module.exports = {
       const row = new MessageActionRow().addComponents(
         new MessageSelectMenu()
           .setCustomId('history-select')
-          .setPlaceholder('Bitte wähle eine Option')
+          .setPlaceholder('Please select an option')
           .addOptions([
             {
-              label: 'Warteschlangen Verlauf',
-              description: `Spiele Song Nummer ${query}`,
+              label: 'History Queue',
+              description: `Play song number ${query}`,
               value: 'history_option',
               emoji: '🔙'
             },
             {
               label: 'YouTube',
-              description: `Suche '${query}' auf YouTube`,
+              description: `Search '${query}' on YouTube`,
               value: 'youtube_option',
               emoji: '🔍'
             },
             {
-              label: 'Abbrechen',
+              label: 'Cancel',
               value: 'cancel_option',
               emoji: '❌'
             }
           ])
       );
       const clarificationOptions = await message.channel.send({
-        content: 'Möchtest du einen Song aus dem Warteschlangen Verlauf abspielen?',
+        content: 'Did you mean to play a song from the history queue?',
         components: [row]
       });
       const clarificationCollector = clarificationOptions.createMessageComponentCollector(
@@ -366,7 +366,7 @@ module.exports = {
               }
               player.commandLock = false;
               interaction.followUp(
-                `'${player.queueHistory[index].title}' wurde zur Warteschlange hinzugefügt!`
+                `'${player.queueHistory[index].title}' was added to queue!`
               );
               break;
             // 2: Search for the query on YouTube
@@ -396,7 +396,7 @@ module.exports = {
             // handle playlist
             const spotifyPlaylistItems = data.tracks.items;
             const processingMessage = await interaction.channel.send({
-              content: 'Verarbeite Playlist...'
+              content: 'Processing Playlist...'
             });
             for (let i = 0; i < spotifyPlaylistItems.length; i++) {
               try {
@@ -429,11 +429,11 @@ module.exports = {
               } catch (err) {
                 processingMessage.delete();
                 return interaction.followUp(
-                  'Konnte Playlist nicht laden. Bitte versuche es später erneut.'
+                  'Failed to process playlist, please try again later'
                 );
               }
             }
-            processingMessage.edit('Playlist wurde verarbeitet!');
+            processingMessage.edit('Playlist Processed!');
             if (player.audioPlayer.state.status !== AudioPlayerStatus.Playing) {
               handleSubscription(player.queue, interaction, player);
               return;
@@ -474,7 +474,7 @@ module.exports = {
         .catch(error => {
           deletePlayerIfNeeded(interaction);
           console.error(error);
-          interaction.followUp(`Ich konnte leider nicht das finden, was du gesucht hast :(`);
+          interaction.followUp(`I couldn't find what you were looking for :(`);
         });
       return;
     }
@@ -484,7 +484,7 @@ module.exports = {
       if (!playlist) {
         deletePlayerIfNeeded(interaction);
         return interaction.followUp(
-          ':x: Playlist ist Privat oder existiert nicht!'
+          ':x: Playlist is either private or it does not exist!'
         );
       }
 
@@ -493,7 +493,7 @@ module.exports = {
         player.commandLock = false;
         deletePlayerIfNeeded(interaction);
         return interaction.followUp(
-          ":x: Ich bin beim laden der Videos von der Playlist auf einem Fehler gestoßen."
+          ":x: I hit a problem when trying to fetch the playlist's videos"
         );
       }
       videosArr = videosArr.videos;
@@ -509,7 +509,7 @@ module.exports = {
       if (player.queue.length >= maxQueueLength) {
         player.commandLock = false;
         return interaction.followUp(
-          'Die Warteschlange ist aktuell voll. Bitte versuche es später erneut.'
+          'The queue is full, please try adding more songs later'
         );
       }
       videosArr = videosArr.splice(0, maxQueueLength - player.queue.length);
@@ -558,7 +558,7 @@ module.exports = {
         //   .addField('Added Playlist', `[${playlist.title}](${playlist.url})`)
         //   .build();
         player.commandLock = false;
-        return interaction.followUp('Playlist wurde zur Warteschlange hinzugefügt!');
+        return interaction.followUp('Added playlist to queue!');
       }
     }
 
@@ -576,20 +576,20 @@ module.exports = {
       }
       timestamp = Number(timestamp);
 
-      const video = await YouTube.getVideo(query).catch(function(error) {
+      const video = await YouTube.searchOne(query).catch(function (e) {
+        console.error(e);
         deletePlayerIfNeeded(interaction);
-        player.commandLock = false;
-		console.log(error);
         interaction.followUp(
-          ':x: Konnte dein Video nicht laden!'
+          ':x: There was a problem getting the video you provided!'
         );
+        player.commandLock = false;
       });
       if (!video) return;
       if (video.live === 'live' && !playLiveStreams) {
         player.commandLock = false;
         deletePlayerIfNeeded(interaction);
         interaction.followUp(
-          'Live streams sind deaktiviert.'
+          'Live streams are disabled in this server! Contact the owner'
         );
         return;
       }
@@ -598,7 +598,7 @@ module.exports = {
         player.commandLock = false;
         deletePlayerIfNeeded(interaction);
         interaction.followUp(
-          'Videos dürfen nicht länger als 1h sein.'
+          'Videos longer than 1 hour are disabled in this server! Contact the owner'
         );
         return;
       }
@@ -606,8 +606,7 @@ module.exports = {
       if (player.length > maxQueueLength) {
         player.commandLock = false;
         interaction.followUp(
-          `Die Warteschlange hat ihre maximale Größe von ${maxQueueLength} erreicht.
-          Bitte warte, bevor du weitere hinzufügst.`
+          `The queue hit its limit of ${maxQueueLength}, please wait a bit before attempting to play more songs`
         );
         return;
       }
@@ -624,7 +623,7 @@ module.exports = {
         );
       }
 
-      if (player.audioPlayer.state.status !== AudioPlayerStatus.Playing && player.audioPlayer.state.status !== AudioPlayerStatus.Buffering) {
+      if (player.audioPlayer.state.status !== AudioPlayerStatus.Playing) {
         handleSubscription(player.queue, interaction, player);
         return;
       }
@@ -673,11 +672,11 @@ var handleSubscription = async (queue, interaction, player) => {
     player.commandLock = false;
     deletePlayerIfNeeded(interaction);
     console.error(err);
-    await interaction.followUp({ content: 'Konnte deinem Channel nicht beitreten!' });
+    await interaction.followUp({ content: 'Failed to join your channel!' });
     return;
   }
   player.process(player.queue);
-  await interaction.followUp(`${title} wurde zur Warteschlange hinzugefügt.`);
+  await interaction.followUp(`Enqueued ${title}`);
 };
 
 // var playbackBar = data => {
@@ -706,14 +705,14 @@ var searchYoutube = async (
   jumpFlag
 ) => {
   const videos = await YouTube.search(query, { limit: 5 }).catch(
-    async function() {
+    async function () {
+      player.commandLock = false;
       return interaction.followUp(
-        ':x: Es gab ein Problem bei der Suche nach deinem Video!'
+        ':x: There was a problem searching the video you requested!'
       );
     }
   );
   if (!videos) {
-    player.commandLock = false;
     return interaction.followUp(
       `:x: I had some trouble finding what you were looking for, please try again or be more specific.`
     );
@@ -731,7 +730,7 @@ var searchYoutube = async (
   vidNameArr.push('cancel');
   const row = createSelectMenu(vidNameArr);
   const playOptions = await interaction.channel.send({
-    content: 'Wähle ein Video',
+    content: 'Pick a video',
     components: [row]
   });
   const playOptionsCollector = playOptions.createMessageComponentCollector({
@@ -747,7 +746,7 @@ var searchYoutube = async (
   playOptionsCollector.on('collect', async i => {
     if (i.user.id !== interaction.user.id) {
       i.reply({
-        content: 'Dieses Ergebnis ist nicht für dich!',
+        content: 'This element is not for you!',
         ephemeral: true
       });
     } else {
@@ -755,17 +754,17 @@ var searchYoutube = async (
       const value = i.values[0];
       if (value === 'cancel_option') {
         if (playOptions) {
-          interaction.followUp('Suche abgebrochen');
+          interaction.followUp('Search canceled');
           player.commandLock = false;
           return;
         }
       }
       const videoIndex = parseInt(value);
 
-      YouTube.getVideo(
+      YouTube.searchOne(
         `https://www.youtube.com/watch?v=${videos[videoIndex - 1].id}`
       )
-        .then(function(video) {
+        .then(function (video) {
           if (video.live && !playLiveStreams) {
             if (playOptions) {
               playOptions.delete().catch(console.error);
@@ -773,7 +772,7 @@ var searchYoutube = async (
             }
             player.commandLock = false;
             return interaction.followUp(
-              'Live streams sind nicht erlaubt.'
+              'Live streams are disabled in this server! Contact the owner'
             );
           }
 
@@ -784,7 +783,7 @@ var searchYoutube = async (
             }
             player.commandLock = false;
             return interaction.followUp(
-              'Videos länger als 1h sind nicht erlaubt.'
+              'Videos longer than 1 hour are disabled in this server! Contact the owner'
             );
           }
 
@@ -798,7 +797,7 @@ var searchYoutube = async (
             }
             player.commandLock = false;
             return interaction.followUp(
-              `Die Warteschlange hat ihre maximale Größe von ${maxQueueLength} erreicht. Bitte versuche es später erneut`
+              `The queue hit its limit of ${maxQueueLength}, please wait a bit before attempting to add more songs`
             );
           }
 
@@ -819,7 +818,7 @@ var searchYoutube = async (
               interaction.client.playerManager
                 .get(interaction.guildId)
                 .audioPlayer.stop();
-              return interaction.followUp('Song wurde übersprungen!');
+              return interaction.followUp('Skipped song!');
             }
           } else {
             interaction.client.playerManager
@@ -851,7 +850,7 @@ var searchYoutube = async (
           if (playOptions) playOptions.delete().catch(console.error);
           console.error(error);
           return interaction.followUp(
-            'Es ist ein Fehler aufgetreten, beim Laden der Youtube ID vom Video.'
+            'An error has occurred while trying to get the video ID from youtube.'
           );
         });
     }
@@ -925,7 +924,7 @@ var createSelectMenu = namesArray =>
   new MessageActionRow().addComponents(
     new MessageSelectMenu()
       .setCustomId('search-yt-menu')
-      .setPlaceholder('Bitte wähle ein Video')
+      .setPlaceholder('Please select a video')
       .addOptions([
         {
           label: `${namesArray[0]}`,
@@ -948,7 +947,7 @@ var createSelectMenu = namesArray =>
           value: '5'
         },
         {
-          label: 'Abbrechen',
+          label: 'Cancel',
           value: 'cancel_option'
         }
       ])
