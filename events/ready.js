@@ -95,12 +95,12 @@ module.exports = {
     })
   })
 
-  /*
+
   stream.on('error', function(err) {
-	  //console.log('Twitter Error')
-      console.log(err)
+	  console.log('Twitter Error')
+      //console.log(err)
   });
-  */
+
   //YOUTUBE INIT
   feeder.on('error', function(err) {
 	  console.log('Youtube Error')
