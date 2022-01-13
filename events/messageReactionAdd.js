@@ -24,10 +24,10 @@ module.exports = {
 
 		if (member.roles.cache.some(role => role.name === selfRole.name)) {
 			member.roles.remove(selfRole);
-			member.send(`Du hast dir die Gruppe ${selfRole.name} weggenommen!`);
+			member.send(`Du hast dir die Gruppe ${selfRole.name} weggenommen!`).catch(error => {});
 		}else{
 			member.roles.add(selfRole);
-			member.send(`Du hast dir die Gruppe ${selfRole.name} gegeben!`);
+			member.send(`Du hast dir die Gruppe ${selfRole.name} gegeben!`).catch(error => {});
 		}
 	}
 	reaction.users.remove(user);
