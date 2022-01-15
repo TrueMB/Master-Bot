@@ -1,4 +1,4 @@
-const { Collection } = require('discord.js');
+const { Collection, MessageEmbed } = require('discord.js');
 const Twit = require('twit');
 const {
 	mongo_URI,
@@ -46,11 +46,7 @@ module.exports = {
     client.guildData = new Collection();
     client.user.setActivity('.tv/JacksonUndercover', { type: 'WATCHING' });
     mongoose
-      .connect(encodeURI(mongo_URI), {
-        useNewUrlParser: true,
-        useUnifiedTopology: true,
-        useFindAndModify: false
-      })
+      .connect(encodeURI(mongo_URI))
       .then(() => {
         console.log('Mongo is ready');
       })
@@ -99,10 +95,33 @@ module.exports = {
     })
   })
 
+  stream.on('error', function(err) {});
 
-  stream.on('error', function(err) {
-	  console.log('Twitter Error')
-      //console.log(err)
+  check(); //ADD YOUTUBERS TO FEED
+  feeder.on('newVideo', function(video) {
+
+	console.log('Youtube Notification');
+
+     let channel = client.channels.cache.get(youtubeDiscordChannel);
+     if(!channel) return console.log("[ERR] | Channel not found");
+
+    let description = video["media:group"]["media:description"]["#"];
+    if(description == null)
+        return console.log("[ERR] | Couldn't load description.");
+
+    const newVidEmbed = new MessageEmbed()
+        .setTitle(':new: ' + video.title)
+        .setDescription(description.length > 200 ? description.substring(0, 200) + ' ...' : description)
+        .setFooter({text: video.author + ' hat ein neues Video hochgeladen!'})
+        .setColor('#FF0040')
+        .setAuthor({name: video.author})
+        .setImage(video.image.url)
+        .setURL(video.link)
+        .setTimestamp(video.pubdate);
+
+	channel.send({ embeds : [newVidEmbed]});
+
+	console.log("Youtube Notification sent!");
   });
 
   //YOUTUBE INIT
@@ -110,8 +129,6 @@ module.exports = {
 	  console.log('Youtube Error')
       //console.log(err)
   });
-
-  check();
 
   console.log('Ready!');
 
@@ -173,26 +190,3 @@ async function check(){
 		  });
     });
 }
-
-feeder.on('newVideo', function(video) {
-     let channel = client.channels.cache.get(youtubeDiscordChannel);
-     if(!channel) return console.log("[ERR] | Channel not found");
-
-    let description = video["media:group"]["media:description"]["#"];
-    if(description == null)
-        description = "";
-
-    const newVidEmbed = new MessageEmbed()
-        .setTitle(':new: ' + video.title)
-        .setDescription(description.length > 200 ? description.substring(0, 200) + ' ...' : description)
-        .setFooter(video.author + ' hat ein neues Video hochgeladen!')
-        .setColor('#FF0040')
-        .setAuthor(video.author)
-        .setImage(video.image.url)
-        .setURL(video.link)
-        .setTimestamp(video.pubdate);
-
-	channel.send(newVidEmbed);
-
-	console.log("Youtube Notification sent!");
-});

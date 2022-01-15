@@ -109,7 +109,7 @@ module.exports = {
     var embed = new MessageEmbed()
       .setColor(`RANDOM`)
       .setImage('attachment://welcome-image.png')
-      .setFooter(`Neuer Member!`)
+      .setFooter({text: `Neuer Member!`})
       .setTimestamp()
       .setTitle(
         guildData.embedTitle
